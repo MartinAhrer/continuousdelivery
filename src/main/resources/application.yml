@@ -1,0 +1,7 @@
+spring:
+  data:
+    rest:
+      basePath: /api
+
+banner:
+  location: banner.txt
