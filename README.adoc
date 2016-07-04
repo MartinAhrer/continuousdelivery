@@ -1,0 +1,13 @@
+# Continuous Delivery Demo
+
+INFO: This is work in progress. We will add features for demoing various aspects of CD.
+
+## TODO
+
+* Add Version Information + tasks
+* Add unit test
+* Add Sonar (metrics)
+* Add build facade (gradle tasks for stages commit, integrationTest, userAcceptanceTest, production)
+* Add external database
+* Add artifactory
+* Add flyway data migration
