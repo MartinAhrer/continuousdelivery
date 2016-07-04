@@ -2,9 +2,6 @@ package shared
 
 import groovy.json.JsonBuilder
 
-/**
- * Created by martin on 20/03/16.
- */
 class CompanyResourceFactory {
     Closure contentWriter = { def content -> content }
     def newResource() {

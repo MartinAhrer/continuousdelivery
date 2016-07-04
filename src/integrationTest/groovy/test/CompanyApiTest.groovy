@@ -15,9 +15,6 @@ import org.springframework.web.client.RestTemplate
 import spock.lang.Narrative
 import spock.lang.Specification
 
-/**
- * Created by martin on 19/03/16.
- */
 @SpringApplicationConfiguration(classes = Application)
 @WebIntegrationTest(randomPort = true)
 // equals to ("server.port:0")

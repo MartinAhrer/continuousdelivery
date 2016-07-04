@@ -1,5 +1,6 @@
-= RESTful Notes API Guide
-Andy Wilkinson;
+= Continuous Delivery Demo API Documentation
+Software Craftsmen GmbH & Co KG
+
 :doctype: book
 :icons: font
 :source-highlighter: highlightjs

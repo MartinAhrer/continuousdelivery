@@ -5,9 +5,6 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
-/**
- * Created by martin on 19/03/16.
- */
 @SpringBootApplication
 @Slf4j
 public class Application {

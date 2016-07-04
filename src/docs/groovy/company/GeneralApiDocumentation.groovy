@@ -42,11 +42,6 @@ import static org.springframework.restdocs.snippet.Attributes.key
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 
-/**
- * Created by martin on 20/03/16.
- */
-
-
 @RunWith(SpringJUnit4ClassRunner.class)
 @SpringApplicationConfiguration(classes = Application)
 @WebAppConfiguration

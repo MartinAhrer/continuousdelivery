@@ -14,6 +14,8 @@ plugins {
     id "net.ltgt.apt" version "0.6"
 
     id "org.asciidoctor.convert" version "1.5.2"
+
+    id 'org.unbroken-dome.test-sets' version '1.2.0'
 }
 
 apply plugin: 'spring-boot'
@@ -37,6 +39,13 @@ ext {
     lombokVersion = '1.16.8'
 }
 
+
+testSets {
+    sharedTest
+    integrationTest
+    docsTest { dirName = 'docs'}
+}
+
 dependencies {
     apt "org.projectlombok:lombok:$lombokVersion"
 
@@ -55,9 +64,12 @@ dependencies {
     testCompile "org.spockframework:spock-core:$spockVersion"
     testCompile "org.spockframework:spock-spring:$spockVersion"
 
-    testCompile 'org.springframework.restdocs:spring-restdocs-mockmvc:1.0.1.RELEASE'
-    testCompile 'com.jayway.jsonpath:json-path'
-    testCompile 'org.hamcrest:hamcrest-library'
+    docsTestCompile 'org.springframework.restdocs:spring-restdocs-mockmvc:1.0.1.RELEASE'
+    docsTestCompile 'com.jayway.jsonpath:json-path'
+    docsTestCompile 'org.hamcrest:hamcrest-library'
+
+    docsTestCompile sourceSets.sharedTest.output
+    integrationTestCompile sourceSets.sharedTest.output
 }
 
 
@@ -72,9 +84,10 @@ test {
 asciidoctor {
     attributes 'snippets': snippetsDir
     inputs.dir snippetsDir
-    dependsOn test
+    dependsOn docsTest
 }
 
+// check: is it still required with ltgt
 idea {
     project {
         ipr {
@@ -101,3 +114,6 @@ idea {
         }
     }
 }
+
+build.dependsOn asciidoctor
+build.dependsOn integrationTest
