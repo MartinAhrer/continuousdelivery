@@ -1,8 +1,7 @@
-package documentation.company
+package test
 
 import at.martinahrer.cd.Application
 import at.martinahrer.cd.CompanyRepository
-import at.martinahrer.cd.model.Company
 import com.fasterxml.jackson.databind.ObjectMapper
 import org.junit.Before
 import org.junit.Rule
@@ -10,18 +9,13 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.SpringApplicationConfiguration
-import org.springframework.hateoas.MediaTypes
-import org.springframework.http.MediaType
-import org.springframework.restdocs.RestDocumentation
-import org.springframework.restdocs.constraints.ConstraintDescriptions
+import org.springframework.restdocs.JUnitRestDocumentation
 import org.springframework.restdocs.mockmvc.RestDocumentationResultHandler
-import org.springframework.restdocs.payload.FieldDescriptor
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner
 import org.springframework.test.context.web.WebAppConfiguration
 import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers
 import org.springframework.test.web.servlet.setup.MockMvcBuilders
-import org.springframework.util.StringUtils
 import org.springframework.web.context.WebApplicationContext
 
 import javax.servlet.RequestDispatcher
@@ -35,10 +29,8 @@ import static org.springframework.restdocs.hypermedia.HypermediaDocumentation.li
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.documentationConfiguration
 import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.get
-import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.post
 import static org.springframework.restdocs.operation.preprocess.Preprocessors.*
 import static org.springframework.restdocs.payload.PayloadDocumentation.*
-import static org.springframework.restdocs.snippet.Attributes.key
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 
@@ -50,7 +42,7 @@ class GeneralApiDocumentation {
     Closure<String> VALUE_WRITER = { def content -> this.objectMapper.writeValueAsString(content) }
 
     @Rule
-    public RestDocumentation restDocumentation = new RestDocumentation("build/generated-snippets/general");
+    public JUnitRestDocumentation restDocumentation = new JUnitRestDocumentation("build/generated-snippets/general");
 
     @Autowired
     private WebApplicationContext context;
@@ -82,7 +74,7 @@ class GeneralApiDocumentation {
 
     @Test
     public void headersExample() throws Exception {
-        this.document.snippets(responseHeaders(
+        this.document.document(responseHeaders(
                 headerWithName("Content-Type").description("The Content-Type of the payload, e.g. `application/hal+json`")));
 
         this.mockMvc.perform(get("/api/"))
@@ -91,7 +83,7 @@ class GeneralApiDocumentation {
 
     @Test
     public void errorExample() throws Exception {
-        this.document.snippets(responseFields(
+        this.document.document(responseFields(
                 fieldWithPath("error").description("The HTTP error that occurred, e.g. `Bad Request`"),
                 fieldWithPath("message").description("A description of the cause of the error"),
                 fieldWithPath("path").description("The path to which the request was made"),
@@ -114,7 +106,7 @@ class GeneralApiDocumentation {
 
     @Test
     public void indexExample() throws Exception {
-        this.document.snippets(
+        this.document.document(
                 links(
                         linkWithRel("companies").description("The <<resources-companies,Companies resource>>"),
                         linkWithRel("profile").description("The <<resources-profile,Profile resource>>")),

@@ -5,7 +5,7 @@ buildscript {
         maven { url "http://repo.spring.io/milestone" }
     }
     dependencies {
-        classpath("org.springframework.boot:spring-boot-gradle-plugin:1.3.3.RELEASE")
+        classpath("org.springframework.boot:spring-boot-gradle-plugin:1.4.1.RELEASE")
     }
 }
 
@@ -29,19 +29,20 @@ repositories {
 }
 
 group 'at.martinahrer'
-version '1.0-SNAPSHOT'
-
-sourceCompatibility = 1.8
+version "${System.getenv('BUILD_NUMBER')?: 'latest'}"
 
 ext {
-    spockVersion = '1.0-groovy-2.4'
-    groovyVersion = '2.4.5'
+    spockVersion = '1.1-groovy-2.4-rc-3'
+    groovyVersion = '2.4.7'
     lombokVersion = '1.16.8'
+    snippetsDir = file('build/generated-snippets')
 }
 
+ext['spock.version'] = spockVersion
 
 testSets {
     sharedTest
+    localIntegrationTest
     integrationTest
     docsTest { dirName = 'docs'}
 }
@@ -57,6 +58,9 @@ dependencies {
     compile("org.projectlombok:lombok:$lombokVersion")
 
     runtime ('org.springframework.data:spring-data-rest-hal-browser')
+    runtime ("org.postgresql:postgresql:9.4-1200-jdbc41") {
+        exclude group: "org.slf4j", module: "slf4j-simple"
+    }
     runtime ("com.h2database:h2:1.4.191")
 
     testCompile "org.codehaus.groovy:groovy-all:$groovyVersion"
@@ -64,17 +68,21 @@ dependencies {
     testCompile "org.spockframework:spock-core:$spockVersion"
     testCompile "org.spockframework:spock-spring:$spockVersion"
 
-    docsTestCompile 'org.springframework.restdocs:spring-restdocs-mockmvc:1.0.1.RELEASE'
+    docsTestCompile 'org.springframework.restdocs:spring-restdocs-mockmvc:1.1.2.RELEASE'
     docsTestCompile 'com.jayway.jsonpath:json-path'
     docsTestCompile 'org.hamcrest:hamcrest-library'
 
     docsTestCompile sourceSets.sharedTest.output
+    docsTestCompile("org.springframework.boot:spring-boot-starter-test")
+    docsTestRuntime ("com.h2database:h2:1.4.191")
+
     integrationTestCompile sourceSets.sharedTest.output
-}
+    integrationTestCompile("org.springframework.boot:spring-boot-starter-test")
+    integrationTestRuntime ("com.h2database:h2:1.4.191")
 
-
-ext {
-    snippetsDir = file('build/generated-snippets')
+    localIntegrationTestCompile sourceSets.sharedTest.output
+    localIntegrationTestCompile("org.springframework.boot:spring-boot-starter-test")
+    localIntegrationTestRuntime ("com.h2database:h2:1.4.191")
 }
 
 test {
@@ -117,3 +125,29 @@ idea {
 
 build.dependsOn asciidoctor
 build.dependsOn integrationTest
+
+bootRepackage {
+    classifier = 'exec'
+}
+
+import org.apache.tools.ant.filters.ReplaceTokens
+ext {
+    dockerSrcDir="$projectDir/src/main/docker"
+    dockerBuildDir="$buildDir/docker"
+}
+
+task buildDockerContext(type: Copy) {
+    group = "Docker"
+    description = "Prepare for building the image (create the Dockerfile, collect image files, etc.)"
+
+    into dockerBuildDir
+
+    from(dockerSrcDir) {
+        filter(ReplaceTokens, tokens: [version: project.version as String])
+    }
+
+    with copySpec {
+        from bootRepackage
+        into "app"
+    }
+}

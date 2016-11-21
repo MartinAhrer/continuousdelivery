@@ -8,6 +8,9 @@ INFO: This is work in progress. We will add features for demoing various aspects
 * Add unit test
 * Add Sonar (metrics)
 * Add build facade (gradle tasks for stages commit, integrationTest, userAcceptanceTest, production)
-* Add external database
-* Add artifactory
+* Add artifactory, bintray
 * Add flyway data migration
+
+## Build
+
+See src/main/docker/README.adoc

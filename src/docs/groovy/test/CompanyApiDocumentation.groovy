@@ -1,4 +1,4 @@
-package documentation.company
+package test
 
 import at.martinahrer.cd.Application
 import at.martinahrer.cd.CompanyRepository
@@ -11,8 +11,7 @@ import org.junit.runner.RunWith
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.SpringApplicationConfiguration
 import org.springframework.hateoas.MediaTypes
-import org.springframework.http.MediaType
-import org.springframework.restdocs.RestDocumentation
+import org.springframework.restdocs.JUnitRestDocumentation
 import org.springframework.restdocs.constraints.ConstraintDescriptions
 import org.springframework.restdocs.mockmvc.RestDocumentationResultHandler
 import org.springframework.restdocs.payload.FieldDescriptor
@@ -35,6 +34,8 @@ import static org.springframework.restdocs.payload.PayloadDocumentation.*
 import static org.springframework.restdocs.snippet.Attributes.key
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 
+//@SpringBootTest(classes = Application, webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+
 @RunWith(SpringJUnit4ClassRunner.class)
 @SpringApplicationConfiguration(classes = Application)
 @WebAppConfiguration
@@ -43,7 +44,7 @@ class CompanyApiDocumentation {
     Closure<String> VALUE_WRITER = { def content -> this.objectMapper.writeValueAsString(content) }
 
     @Rule
-    public RestDocumentation restDocumentation = new RestDocumentation("build/generated-snippets/company");
+    public JUnitRestDocumentation restDocumentation = new JUnitRestDocumentation("build/generated-snippets/company");
 
     @Autowired
     private WebApplicationContext context;
@@ -124,7 +125,7 @@ class CompanyApiDocumentation {
 
         ConstrainedFields fields = new ConstrainedFields(Company);
 
-        this.document.snippets(
+        this.document.document(
                 requestFields(
                         fields.withPath("name").description("The name of the company"),
                         fields.withPath("address").optional().description("The address of the company")));

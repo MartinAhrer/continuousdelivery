@@ -9,10 +9,10 @@ Software Craftsmen GmbH & Co KG
 :sectlinks:
 
 [[overview]]
-= Overview
+== Overview
 
 [[overview-http-verbs]]
-== HTTP verbs
+=== HTTP verbs
 
 RESTful notes tries to adhere as closely as possible to standard HTTP and REST conventions in its
 use of HTTP verbs.
@@ -34,7 +34,7 @@ use of HTTP verbs.
 |===
 
 [[overview-http-status-codes]]
-== HTTP status codes
+=== HTTP status codes
 
 RESTful notes tries to adhere as closely as possible to standard HTTP and REST conventions in its
 use of HTTP status codes.
@@ -60,14 +60,14 @@ use of HTTP status codes.
 |===
 
 [[overview-headers]]
-== Headers
+=== Headers
 
 Every response has the following header(s):
 
 include::{snippets}/general/headers-example/response-headers.adoc[]
 
 [[overview-errors]]
-== Errors
+=== Errors
 
 Whenever an error response (status code >= 400) is returned, the body will contain a JSON object
 that describes the problem. The error object has the following structure:
@@ -80,7 +80,7 @@ For example, a request that attempts to apply a non-existent tag to a note will 
 include::{snippets}/general/error-example/http-response.adoc[]
 
 [[overview-hypermedia]]
-== Hypermedia
+=== Hypermedia
 
 RESTful Notes uses hypermedia and resources include links to other resources in their
 responses. Responses are in http://stateless.co/hal_specification.html[Hypertext Application
@@ -89,96 +89,96 @@ Language (HAL)] format. Links can be found beneath the `_links` key. Users of th
 not create URIs themselves, instead they should use the above-described links to navigate
 
 [[resources]]
-= Resources
+== Resources
 
 [[resources-index]]
-== Index
+=== Index
 
 The index provides the entry point into the service.
 
 
 [[resources-index-access]]
-=== Accessing the index
+==== Accessing the index
 
 A `GET` request is used to access the index
 
-==== Response structure
+===== Response structure
 
 include::{snippets}/general/index-example/response-fields.adoc[]
 
-==== Example response
+===== Example response
 
 include::{snippets}/general/index-example/http-response.adoc[]
 
 
 [[resources-index-links]]
-==== Links
+===== Links
 
 include::{snippets}/general/index-example/links.adoc[]
 
 
 [[resources-companies]]
-== Companies
+=== Companies
 
 The Companies resources is used to create and list companies
 
 [[resources-companies-list]]
-=== Listing companies
+==== Listing companies
 
 A `GET` request will list all of the service's companies.
 
-==== Response structure
+===== Response structure
 
 include::{snippets}/company/list-example/response-fields.adoc[]
 
-==== Example request
+===== Example request
 
 include::{snippets}/company/list-example/curl-request.adoc[]
 
-==== Example response
+===== Example response
 
 include::{snippets}/company/list-example/http-response.adoc[]
 
 [[]]
-==== Links
+===== Links
 
 include::{snippets}/company/list-example/links.adoc[]
 
 [[resources-companies-get-by-id]]
-=== Get a company
+==== Get a company
 
 A `GET` request will get one of the service's companies identified by its id.
 
-==== Response structure
+===== Response structure
 
 include::{snippets}/company/get-by-id-example/response-fields.adoc[]
 
-==== Example request
+===== Example request
 
 include::{snippets}/company/get-by-id-example/curl-request.adoc[]
 
-==== Example response
+===== Example response
 
 include::{snippets}/company/get-by-id-example/http-response.adoc[]
 
 [[resources-companies-links]]
-==== Links
+===== Links
 
 include::{snippets}/company/get-by-id-example/links.adoc[]
 
 [[resources-companies-create]]
-=== Creating a company
+==== Creating a company
 
 A `POST` request is used to create a company
 
-==== Request structure
+===== Request structure
 
 include::{snippets}/company/create-example/request-fields.adoc[]
 
-==== Example request
+===== Example request
 
 include::{snippets}/company/create-example/curl-request.adoc[]
 
-==== Example response
+===== Example response
 
 include::{snippets}/company/create-example/http-response.adoc[]
