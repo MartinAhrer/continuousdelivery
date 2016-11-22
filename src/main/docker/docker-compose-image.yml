@@ -1,0 +1,7 @@
+version: '2'
+
+services:
+  # Build Docker Image
+  app:
+    build: ${PWD}/build/docker/app
+    image: cd-demo:${BUILD_NUMBER}

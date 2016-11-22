@@ -1,0 +1,51 @@
+= README
+
+## Setup
+
+The compose project name is set as global variable, alternatively we can just add `--project-name continuousdelivery` to each compose command.
+
+[source,bash]
+----
+export COMPOSE_PROJECT_NAME=continuousdelivery
+----
+
+## Build
+
+A build number is required for building all artifacts including the Docker image.
+
+[source,bash]
+----
+: ${BUILD_NUMBER:=latest}
+export BUILD_NUMBER
+----
+
+Build is running the following tasks
+
+ * unit tests,
+ * local integration tests (using a fast embedded database and an embedded Tomcat)
+ * documentation tests,
+ * build Spring JAR
+ * build Docker context (Dockerfile, docker-compose scripts)
+
+All compose triggered tasks that execute Gradle tasks have to run with the project root directory as current directory.
+
+.Run tests and build the Docker context
+[source,bash]
+----
+docker-compose -f src/main/docker/docker-compose-local-test.yml run --rm build
+----
+
+.Build Application Image
+[source,bash]
+----
+docker-compose -f build/docker/docker-compose-image.yml build app
+----
+
+## Run integration test
+
+This will startup a _production-like_ environment and runs a suite of integration tests.
+
+[source,bash]
+----
+docker-compose -f build/docker/docker-compose-integration-test.yml run --rm integration
+----
