@@ -1,53 +1,20 @@
 version: '2'
 
 services:
-
-  postgresdb:
-    build:
-      context: ./postgresdb
-    image: cd-demo-postgresdb:${BUILD_NUMBER}
-    environment:
-      - POSTGRES_USER
-      - POSTGRES_PASSWORD
-      - SPRING_DATASOURCE_USERNAME=spring
-      - SPRING_DATASOURCE_PASSWORD=spring
-    volumes:
-      - postgresdb:/var/lib/postgresql
-      # This needs explicit mapping due to https://github.com/docker-library/postgres/blob/4e48e3228a30763913ece952c611e5e9b95c8759/Dockerfile.template#L52
-      - postgresdb_data:/var/lib/postgresql/data
-    restart: always
-
-  app:
-    image: cd-demo:${BUILD_NUMBER}
-    environment:
-      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgresdb/app
-      - SPRING_DATASOURCE_USERNAME=spring
-      - SPRING_DATASOURCE_PASSWORD=spring
-      - SPRING_JPA_GENERATE_DDL=true
-#    ports:
-#      - "${APP_PORT}:8080"
-    depends_on:
-      - postgresdb
-    restart: always
-
   # Run integration test against the app
   integration:
     image: openjdk:8-jdk
     volumes:
-      - ${PWD}:/project
+      - ${PROJECT_DIR}:/project
       - dot_gradle:/root/.gradle
     working_dir: "/project"
     command: "bash -c \"./gradlew integrationTest\""
     environment:
-      - TEST_SERVER_HOST=app
-      - TEST_SERVER_PORT=8080
+      - TEST_SERVER_HOST=${APP_HOST}
+      - TEST_SERVER_PORT=${APP_PORT}
     depends_on:
       - app
 
 volumes:
-  postgresdb:
-    driver: local
-  postgresdb_data:
-    driver: local
   dot_gradle:
     external: true

@@ -7,4 +7,4 @@ ADD continuousdelivery-@version@-exec.jar /opt/app/app.jar
 
 EXPOSE 8080
 
-CMD "bash -c \"java -jar /opt/app/app.jar\""
+CMD java -jar /opt/app/app.jar

@@ -1,0 +1,37 @@
+version: '2'
+
+services:
+
+  postgresdb:
+    build:
+      context: ./postgresdb
+    image: continuousdelivery-postgresdb:${BUILD_NUMBER}
+    environment:
+      - POSTGRES_USER
+      - POSTGRES_PASSWORD
+      - SPRING_DATASOURCE_USERNAME
+      - SPRING_DATASOURCE_PASSWORD
+    volumes:
+      - postgresdb:/var/lib/postgresql
+      # This needs explicit mapping due to https://github.com/docker-library/postgres/blob/4e48e3228a30763913ece952c611e5e9b95c8759/Dockerfile.template#L52
+      - postgresdb_data:/var/lib/postgresql/data
+    restart: always
+
+  app:
+    build:
+      context: ./app
+    image: continuousdelivery-app:${BUILD_NUMBER}
+    environment:
+      - SPRING_DATASOURCE_URL
+      - SPRING_DATASOURCE_USERNAME
+      - SPRING_DATASOURCE_PASSWORD
+      - SPRING_JPA_GENERATE_DDL
+    depends_on:
+      - postgresdb
+    restart: always
+
+volumes:
+  postgresdb:
+    driver: local
+  postgresdb_data:
+    driver: local
