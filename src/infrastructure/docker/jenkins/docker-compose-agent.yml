@@ -1,0 +1,20 @@
+#
+# Add Jenkins swarm agent
+#
+version: '2'
+
+services:
+  agent:
+    image: softwarecraftsmen/jenkins-swarm-agent:0.1
+    restart: always
+    hostname: agent
+    environment:
+      - COMMAND_OPTIONS=-master http://master:8080 -username ${JENKINS_ADMIN_USERNAME} -password ${JENKINS_ADMIN_PASSWORD} -labels 'docker' -executors 5
+      - JENKINS_AGENT_WORKSPACE
+    depends_on:
+      - master
+    privileged: true
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ${JENKINS_AGENT_WORKSPACE}:/workspace
+

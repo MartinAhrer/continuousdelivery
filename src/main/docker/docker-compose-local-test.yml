@@ -6,10 +6,10 @@ services:
   build:
     image: openjdk:8-jdk
     volumes:
-      - ${PWD}:/project
+      - ${PROJECT_DIR}:/project
       - dot_gradle:/root/.gradle
     working_dir: "/project"
-    command: "bash -c \"./gradlew localIntegrationTest asciidoctor assemble buildDockerContext\""
+    command: "bash -c \"./gradlew clean localIntegrationTest asciidoctor assemble buildDockerContext\""
 
 volumes:
   dot_gradle:

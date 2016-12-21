@@ -32,13 +32,15 @@ All compose triggered tasks that execute Gradle tasks have to run with the proje
 .Run tests and build the Docker context
 [source,bash]
 ----
+export COMPOSE_PROJECT_NAME=continuousdelivery
+export PROJECT_DIR=$PWD
 docker-compose -f src/main/docker/docker-compose-local-test.yml run --rm build
 ----
 
 .Build Application Image
 [source,bash]
 ----
-docker-compose -f build/docker/docker-compose-image.yml build app
+TODO
 ----
 
 ## Run integration test
@@ -47,5 +49,11 @@ This will startup a _production-like_ environment and runs a suite of integratio
 
 [source,bash]
 ----
-docker-compose -f build/docker/docker-compose-integration-test.yml run --rm integration
+export COMPOSE_PROJECT_NAME=continuousdelivery
+export BUILD_NUMBER=latest
+export PROJECT_DIR=$PWD
+# have to change to the directory containing the compose files, it also contains a .env file. TODO replace by values in the compose-file/exported variables
+cd build/docker
+docker-compose -f docker-compose.yml -f docker-compose-integration-test.yml run --rm integration
+docker-compose -f docker-compose.yml -f docker-compose-integration-test.yml down -v
 ----

@@ -1,0 +1,39 @@
+= README
+
+== Run Jenkins
+
+This runs a Jenkins master and agent.
+
+[source,bash]
+----
+export JENKINS_AGENT_WORKSPACE=/workspace
+docker-compose --project-name jenkins -f docker-compose.yml -f docker-compose-agent.yml up -d
+----
+
+[IMPORTANT]
+--
+The `workspace` directory must exist on the host. Create it before if using a docker-machine managed host:
+`docker-machine ssh <machine-id> "mkdir /workspace"`
+--
+
+=== Use local Jenkins workspace
+
+[source,bash]
+----
+export JENKINS_AGENT_WORKSPACE=$PWD/workspace
+docker-compose --project-name jenkins -f docker-compose.yml -f docker-compose-agent.yml up -d
+----
+
+=== Use local source repositories
+
+Add and load an additional docker-compose YML configuration such as:
+
+[source,bash]
+----
+include::docker-compose-local-repositories.yml[linenums]
+----
+
+[source,bash]
+----
+docker-compose --project-name jenkins -f docker-compose.yml -f docker-compose-agent.yml -f docker-compose-local-repositories.yml up -d
+----
