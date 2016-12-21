@@ -52,7 +52,7 @@ class CompanyApiDocumentation {
     @Autowired
     private ObjectMapper objectMapper;
 
-    private RestDocumentationResultHandler document;
+    private RestDocumentationResultHandler documentationHandler;
 
     private MockMvc mockMvc;
 
@@ -62,14 +62,14 @@ class CompanyApiDocumentation {
 
     @Before
     public void setUp() {
-        this.document = document("{method-name}",
+        this.documentationHandler = document("{method-name}",
                 preprocessRequest(prettyPrint()),
-                preprocessResponse(prettyPrint()));
+                preprocessResponse(prettyPrint()))
 
         this.mockMvc = MockMvcBuilders.webAppContextSetup(this.context)
                 .apply(documentationConfiguration(this.restDocumentation))
-                .alwaysDo(this.document)
-                .build();
+                .alwaysDo(this.documentationHandler)
+                .build()
 
         createExampleCompany()
         return
@@ -86,53 +86,52 @@ class CompanyApiDocumentation {
 
     @Test
     public void listExample() {
-        this.document.snippets(
-                links(
+        this.mockMvc.perform(get("/api/companies").accept(MediaTypes.HAL_JSON))
+                .andExpect(status().isOk())
+                .andDo(documentationHandler.document(
+                    links(
                         linkWithRel("self").description("This <<resources-companies,companies>>"),
                         linkWithRel("profile").description("The <<resources-companies-profile, companies profile resource>>")),
 
-                responseFields(
+                    responseFields(
                         fieldWithPath("_embedded.companies").description("An array of <<resources-companies, Company resources>>"),
                         fieldWithPath("_links").description("<<resources-companies-links,Links>> to other resources"),
-                        fieldWithPath("page").description("The pagination information")));
-
-        this.mockMvc.perform(get("/api/companies").accept(MediaTypes.HAL_JSON))
-                .andExpect(status().isOk());
+                        fieldWithPath("page").description("The pagination information")))
+        )
     }
 
     @Test
     public void getByIdExample() {
         ConstrainedFields fields = new ConstrainedFields(Company);
 
-        this.document.snippets(
-                links(
+        this.mockMvc.perform(get("/api/companies/1").accept(MediaTypes.HAL_JSON))
+                .andExpect(status().isOk())
+                .andDo(documentationHandler.document(
+                    links(
                         linkWithRel("self").description("This <<resources-companies,company>>"),
                         linkWithRel("company").description("This <<resources-companies,company>>")
-                ),
-                responseFields(
+                    ),
+                    responseFields(
                         fieldWithPath("new").ignored(),
                         fields.withPath("name").description("The name of the company"),
                         fields.withPath("address").description("The address of the company"),
-                        fieldWithPath("_links").description("<<resources-companies-links,Links>> to other resources")));
-
-        this.mockMvc.perform(get("/api/companies/1").accept(MediaTypes.HAL_JSON))
-                .andExpect(status().isOk());
+                        fieldWithPath("_links").description("<<resources-companies-links,Links>> to other resources")))
+        )
     }
 
     @Test
     public void createExample() throws Exception {
         def resource = new CompanyResourceFactory(contentWriter: VALUE_WRITER).newResource();
 
-        ConstrainedFields fields = new ConstrainedFields(Company);
-
-        this.document.document(
-                requestFields(
-                        fields.withPath("name").description("The name of the company"),
-                        fields.withPath("address").optional().description("The address of the company")));
+        ConstrainedFields fields = new ConstrainedFields(Company)
 
         this.mockMvc.perform(
                 post("/api/companies").contentType(MediaTypes.HAL_JSON).content(resource))
-                .andExpect(status().isCreated());
+                .andExpect(status().isCreated())
+                .andDo(documentationHandler.document(
+                    requestFields(
+                        fields.withPath("name").description("The name of the company"),
+                        fields.withPath("address").optional().description("The address of the company"))))
     }
 
     private static class ConstrainedFields {

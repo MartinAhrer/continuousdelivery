@@ -50,7 +50,7 @@ class GeneralApiDocumentation {
     @Autowired
     private ObjectMapper objectMapper;
 
-    private RestDocumentationResultHandler document;
+    private RestDocumentationResultHandler documentationHandler;
 
     private MockMvc mockMvc;
 
@@ -60,36 +60,30 @@ class GeneralApiDocumentation {
 
     @Before
     public void setUp() {
-        this.document = document("{method-name}",
+        this.documentationHandler = document("{method-name}",
                 preprocessRequest(prettyPrint()),
                 preprocessResponse(prettyPrint()));
 
         this.mockMvc = MockMvcBuilders.webAppContextSetup(this.context)
                 .apply(documentationConfiguration(this.restDocumentation))
-                .alwaysDo(this.document)
-                .build();
+                .alwaysDo(this.documentationHandler)
+                .build()
 
         return
     }
 
     @Test
     public void headersExample() throws Exception {
-        this.document.document(responseHeaders(
-                headerWithName("Content-Type").description("The Content-Type of the payload, e.g. `application/hal+json`")));
 
         this.mockMvc.perform(get("/api/"))
-                .andExpect(status().isOk());
+                .andExpect(status().isOk())
+                .andDo(documentationHandler.document(responseHeaders(
+                    headerWithName("Content-Type").description("The Content-Type of the payload, e.g. `application/hal+json`")))
+        )
     }
 
     @Test
     public void errorExample() throws Exception {
-        this.document.document(responseFields(
-                fieldWithPath("error").description("The HTTP error that occurred, e.g. `Bad Request`"),
-                fieldWithPath("message").description("A description of the cause of the error"),
-                fieldWithPath("path").description("The path to which the request was made"),
-                fieldWithPath("status").description("The HTTP status code, e.g. `400`"),
-                fieldWithPath("timestamp").description("The time, in milliseconds, at which the error occurred")));
-
         this.mockMvc
                 .perform(get("/error")
                 .requestAttr(RequestDispatcher.ERROR_STATUS_CODE, 400)
@@ -101,19 +95,24 @@ class GeneralApiDocumentation {
                 .andExpect(MockMvcResultMatchers.jsonPath("error", is("Bad Request")))
                 .andExpect(MockMvcResultMatchers.jsonPath("timestamp", is(notNullValue())))
                 .andExpect(MockMvcResultMatchers.jsonPath("status", is(400)))
-                .andExpect(MockMvcResultMatchers.jsonPath("path", is(notNullValue())));
+                .andExpect(MockMvcResultMatchers.jsonPath("path", is(notNullValue())))
+                .andDo(documentationHandler.document(responseFields(
+                    fieldWithPath("error").description("The HTTP error that occurred, e.g. `Bad Request`"),
+                    fieldWithPath("message").description("A description of the cause of the error"),
+                    fieldWithPath("path").description("The path to which the request was made"),
+                    fieldWithPath("status").description("The HTTP status code, e.g. `400`"),
+                    fieldWithPath("timestamp").description("The time, in milliseconds, at which the error occurred"))))
     }
 
     @Test
     public void indexExample() throws Exception {
-        this.document.document(
-                links(
+        this.mockMvc.perform(get("/api/"))
+                .andExpect(status().isOk())
+                .andDo(documentationHandler.document(links(
                         linkWithRel("companies").description("The <<resources-companies,Companies resource>>"),
                         linkWithRel("profile").description("The <<resources-profile,Profile resource>>")),
-                responseFields(
-                        fieldWithPath("_links").description("<<resources-index-links,Links>> to other resources")));
-
-        this.mockMvc.perform(get("/api/"))
-                .andExpect(status().isOk());
+                    responseFields(
+                        fieldWithPath("_links").description("<<resources-index-links,Links>> to other resources")))
+        )
     }
 }
