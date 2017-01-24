@@ -16,11 +16,13 @@ plugins {
     id "org.asciidoctor.convert" version "1.5.2"
 
     id 'org.unbroken-dome.test-sets' version '1.2.0'
+    id 'com.jfrog.bintray' version '1.7'
 }
 
 apply plugin: 'spring-boot'
 apply plugin: 'java'
 apply plugin: 'groovy'
+apply plugin: 'maven-publish'
 
 apply plugin: 'idea'
 
@@ -28,7 +30,8 @@ repositories {
     mavenCentral()
 }
 
-group 'at.martinahrer'
+group 'at.software-craftsmen'
+
 version "${System.getenv('BUILD_NUMBER')?: 'latest'}"
 
 ext {
@@ -124,7 +127,7 @@ idea {
 }
 
 build.dependsOn asciidoctor
-build.dependsOn integrationTest
+build.dependsOn localIntegrationTest
 
 bootRepackage {
     classifier = 'exec'
@@ -149,5 +152,34 @@ task buildDockerContext(type: Copy) {
     with copySpec {
         from bootRepackage
         into "app"
+    }
+}
+
+
+publishing {
+    publications {
+        mavenBoot(MavenPublication) {
+            artifact(file("$buildDir/libs/$project.name-$project.version-${bootRepackage.classifier}.jar")) {
+                classifier 'exec'
+            }
+       }
+    }
+}
+
+bintray {
+    user = project.hasProperty('bintrayUser') ? project.property('bintrayUser') : System.getenv('BINTRAY_USER')
+    key = project.hasProperty('bintrayApiKey') ? project.property('bintrayApiKey') : System.getenv('BINTRAY_API_KEY')
+
+    publications = ['mavenBoot']
+
+    pkg {
+        repo = 'continuousdelivery'
+        name = project.name
+        licenses = ['Apache-2.0']
+        vcsUrl = 'https://github.com/SoftwareCraftsmen/continuousdelivery.git'
+
+        version {
+            name = project.version
+        }
     }
 }
