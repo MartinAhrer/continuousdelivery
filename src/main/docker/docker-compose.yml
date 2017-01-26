@@ -5,7 +5,7 @@ services:
   postgresdb:
     build:
       context: ./postgresdb
-    image: continuousdelivery-postgresdb:${BUILD_NUMBER}
+    image: ${DOCKER_REGISTRY}continuousdelivery-postgresdb:${BUILD_NUMBER}
     environment:
       - POSTGRES_USER
       - POSTGRES_PASSWORD
@@ -20,7 +20,7 @@ services:
   app:
     build:
       context: ./app
-    image: continuousdelivery-app:${BUILD_NUMBER}
+    image: ${DOCKER_REGISTRY}continuousdelivery-app:${BUILD_NUMBER}
     environment:
       - SPRING_DATASOURCE_URL
       - SPRING_DATASOURCE_USERNAME

@@ -1,4 +1,4 @@
-FROM openjdk:8-jdk
+FROM openjdk:8-jre
 MAINTAINER Martin Ahrer <this@martinahrer.at>
 
 RUN mkdir /opt/app
