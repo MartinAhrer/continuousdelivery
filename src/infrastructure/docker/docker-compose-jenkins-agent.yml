@@ -4,8 +4,11 @@
 version: '2'
 
 services:
+  master:
+    ports:
+      - "${JENKINS_AGENT_PORT}:50000"
   agent:
-    image: softwarecraftsmen/jenkins-swarm-agent:0.1
+    image: softwarecraftsmen/jenkins-swarm-agent:0.2
     restart: always
     hostname: agent
     environment:

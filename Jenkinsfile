@@ -9,24 +9,24 @@ node ('docker') {
                 sh 'docker volume create --name dot_gradle'
             }
         } catch (Exception e) {
-            echo e
+            currentBuild.result = 'FAILURE'
         }
     }
     def projectDir="${env.JENKINS_AGENT_WORKSPACE}/${env.JOB_NAME}"
+    def projectName="${env.JOB_NAME}_${env.BUILD_NUMBER}"
 
-    stage ('commit') {
+    stage ('build') {
         withEnv ([ "PROJECT_DIR=/${projectDir}",
-                   "COMPOSE_PROJECT_NAME=continuousdelivery" ]) {
-            sh "docker-compose -f src/main/docker/docker-compose-local-test.yml run --rm build"
+                   "COMPOSE_PROJECT_NAME=${projectName}" ]) {
+            sh "docker-compose -f src/main/docker/pipeline-build.yml run --rm build"
             junit ("build/docsTest-results/*.xml")
-            junit ("build/localIntegrationTest-results/*.xml")
-        }
+            //junit ("build/localIntegrationTest-results/*.xml")
+            }
     }
 
     stage ('integration') {
         withEnv ([ "PROJECT_DIR=/${projectDir}",
-                   "COMPOSE_PROJECT_NAME=continuousdelivery",
-                   "DOCKER_REGISTRY=nexus:5000/",
+                   "COMPOSE_PROJECT_NAME=${projectName}",
                    "SPRING_DATASOURCE_URL=jdbc:postgresql://postgresdb/app",
                    "SPRING_DATASOURCE_USERNAME=spring",
                    "SPRING_DATASOURCE_PASSWORD=boot",
@@ -35,10 +35,10 @@ node ('docker') {
 
             dir ('build/docker') {
                 try {
-                    sh "docker-compose build"
+                    sh "docker-compose config && docker-compose build"
 
                     // dependent services are brought up by the integration test and have to be shut down afterwards
-                    sh "docker-compose -f docker-compose.yml -f docker-compose-integration-test.yml run --rm integration"
+                    sh "docker-compose -f docker-compose.yml -f pipeline-integration-test.yml run --rm integration-test"
                 }
                 catch (Exception ex) {
                     currentBuild.result = 'FAILURE'
@@ -54,22 +54,26 @@ node ('docker') {
     stage ('deliver') {
 
         withEnv ([ "PROJECT_DIR=/${projectDir}",
-                   "COMPOSE_PROJECT_NAME=continuousdelivery",
-                   "DOCKER_REGISTRY=nexus:5000/",
-                   "DOCKER_REGISTRY_USER=admin",
-                   "DOCKER_REGISTRY_PASSWORD=admin123"
+                   "COMPOSE_PROJECT_NAME=${projectName}"
                    ]) {
-            sh 'docker login --username=${DOCKER_REGISTRY_USER} --password=${DOCKER_REGISTRY_PASSWORD} ${DOCKER_REGISTRY}'
-            dir ('build/docker') {
-                try {
-                    sh "docker-compose push"
-                }
-                catch (Exception ex) {
-                    currentBuild.result = 'FAILURE'
-                }
-                finally {
-                    // remove images
-                    sh "docker-compose down --rmi all"
+
+            withCredentials([usernamePassword(
+                credentialsId: 'docker-registry',
+                passwordVariable: 'DOCKER_REGISTRY_PASSWORD',
+                usernameVariable: 'DOCKER_REGISTRY_USER')]) {
+
+                sh 'docker login --username=${DOCKER_REGISTRY_USER} --password=${DOCKER_REGISTRY_PASSWORD} ${DOCKER_REGISTRY}'
+                dir ('build/docker') {
+                    try {
+                        sh "docker-compose config && docker-compose push"
+                    }
+                    catch (Exception ex) {
+                        currentBuild.result = 'FAILURE'
+                    }
+                    finally {
+                        // remove images
+                        sh "docker-compose down --rmi all"
+                    }
                 }
             }
         }

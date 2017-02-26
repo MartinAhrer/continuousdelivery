@@ -1,0 +1,75 @@
+= README
+
+== Common setup
+
+The following `docker-compose` command are assuming the following environment variable definitions in `.env`:
+
+[source,bash]
+----
+COMPOSE_PROJECT=infrastructure
+COMPOSE_HTTP_TIMEOUT=300
+----
+
+== Run Jenkins
+
+This runs a Jenkins master and agent.
+
+[source,bash]
+----
+export JENKINS_AGENT_WORKSPACE=/workspace
+export JENKINS_AGENT_EXECUTORS=5
+docker-compose -f docker-compose-jenkins.yml -f docker-compose-jenkins-agent.yml up -d
+----
+
+[IMPORTANT]
+--
+The `workspace` directory must exist on the Docker host. Create it before if using a docker-machine managed host:
+`docker-machine ssh <machine-id> "mkdir /workspace"`
+--
+
+=== Use local Jenkins workspace
+
+[source,bash]
+----
+export JENKINS_AGENT_WORKSPACE=$PWD/workspace
+docker-compose -f docker-compose-jenkins.yml -f docker-compose-jenkins-agent.yml up -d
+----
+
+=== Use local source repositories
+
+Add and load an additional docker-compose YML configuration such as:
+
+[source,bash]
+----
+include::docker-compose-local-repositories.yml[linenums]
+----
+
+[source,bash]
+----
+docker-compose -f docker-compose-jenkins.yml -f docker-compose-jenkins-agent.yml -f docker-compose-local-repositories.yml up -d
+----
+
+== Run Nexus
+
+[source,bash]
+----
+docker-compose -f docker-compose-nexus.yml -f docker-compose-nexus-docker-registry.yml up -d
+----
+
+=== Configure
+
+blob store
+docker-registry:/nexus-docker-data/blobs/docker-registry
+
+registry
+docker(hosted) docker-local-releases, blob store docker-registry, connector port 15000, disable redeploy
+
+configure nexus credentials in jenkins
+
+ID: nexus-deployer
+Description: Credentials for nexus deployment
+credentials for account with nexus deployment capabilities
+
+Add insecure regsistry to docker daemon
+docker-registry:15000
+add /etc/hosts 127.0.0.1 docker-registry

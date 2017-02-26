@@ -1,0 +1,11 @@
+version: "2"
+
+services:
+  repository:
+    ports:
+      - ${NEXUS_DOCKER_REGISTRY_PORT}:5000
+    volumes:
+      - docker-data:/nexus-docker-data
+
+volumes:
+  docker-data: {}

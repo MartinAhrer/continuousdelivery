@@ -1,0 +1,13 @@
+version: "2"
+
+services:
+  repository:
+    image: sonatype/nexus3:${NEXUS_TAG}
+    ports:
+      - ${NEXUS_HTTP_PORT}:8081
+    restart: always
+    volumes:
+      - data:/nexus-data
+
+volumes:
+  data: {}
