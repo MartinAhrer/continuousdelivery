@@ -56,20 +56,40 @@ docker-compose -f docker-compose-jenkins.yml -f docker-compose-jenkins-agent.yml
 docker-compose -f docker-compose-nexus.yml -f docker-compose-nexus-docker-registry.yml up -d
 ----
 
-=== Configure
+=== Configure Nexus
 
-blob store
-docker-registry:/nexus-docker-data/blobs/docker-registry
+.blob store
+Type: File
+Name: docker-registry:
+Path: /nexus-docker-data/blobs/docker-registry
 
-registry
-docker(hosted) docker-local-releases, blob store docker-registry, connector port 15000, disable redeploy
+.Docker registry and connector
+Type: docker(hosted),
+Name: docker-local-releases,
+Blob store: docker-registry,
+Connector: HTTP, port 5000
 
-configure nexus credentials in jenkins
+.Deployment policy
+Disable redeploy
 
+=== Configure Jenkins
+
+.Add domain "Nexus"
+Name: Nexus
+Description: Nexus artifact manager and docker registry
+
+.Add credential
 ID: nexus-deployer
-Description: Credentials for nexus deployment
-credentials for account with nexus deployment capabilities
+Description: Credentials for deploying to the Docker registry
 
-Add insecure regsistry to docker daemon
+=== Configure docker-daemon unsecure registry
+
+.Add docker-registry to /etc/hosts
+----
+ 127.0.0.1 docker-registry
+----
+
+.Add insecure registry to daemon config
+----
 docker-registry:15000
-add /etc/hosts 127.0.0.1 docker-registry
+----
