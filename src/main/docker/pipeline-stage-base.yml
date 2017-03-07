@@ -1,3 +1,7 @@
+#
+# Running a container using a docker-compose run --rm command creates and leaves a default network. With network_mode: host this network will not be created.
+#
+
 version: '2'
 
 services:
@@ -8,4 +12,5 @@ services:
     volumes:
       - ${PROJECT_DIR}:/project
       - dot_gradle:/root/.gradle
+    network_mode: host
     working_dir: "/project"
