@@ -9,6 +9,7 @@ services:
     image: openjdk:8-jdk
     environment:
       - GRADLE_OPTS
+      - BUILD_NUMBER
     volumes:
       - ${PROJECT_DIR}:/project
       - dot_gradle:/root/.gradle
