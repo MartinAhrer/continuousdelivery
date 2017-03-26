@@ -1,3 +1,11 @@
+//
+// Required external configuration
+// environment:
+//  - DOCKER_REGISTRY=docker-registry:15000/
+//  - JENKINS_AGENT_WORKSPACE
+// credentials:
+//  - docker-registry
+
 node ('docker') {
     stage ('prepare') {
         checkout scm

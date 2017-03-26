@@ -8,8 +8,8 @@ version: '2'
 services:
   master:
     volumes:
-      - /Volumes/Disk/Development/spaces/software-craftsmen:/repositories
+      - /Volumes/Disk/Development/spaces:/repositories
 
   agent:
     volumes:
-      - /Volumes/Disk/Development/spaces/software-craftsmen:/repositories
+      - /Volumes/Disk/Development/spaces:/repositories
