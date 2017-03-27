@@ -66,3 +66,4 @@ build/
 .env
 .shelf
 workspace/
+jenkins-agent/

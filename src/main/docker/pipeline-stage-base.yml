@@ -2,16 +2,15 @@
 # Running a container using a docker-compose run --rm command creates and leaves a default network. With network_mode: host this network will not be created.
 #
 
-version: '2'
+version: '2.1'
 
 services:
   stage-base:
     image: openjdk:8-jdk
     environment:
       - GRADLE_OPTS
-      - BUILD_NUMBER
+      - APP_TAG
     volumes:
       - ${PROJECT_DIR}:/project
       - dot_gradle:/root/.gradle
-    network_mode: host
     working_dir: "/project"
