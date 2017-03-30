@@ -10,7 +10,8 @@ buildscript {
 }
 
 plugins {
-    id 'org.ajoberstar.release-opinion' version '1.4.2'
+    id 'org.ajoberstar.grgit' version '1.7.0'
+    id 'org.ajoberstar.release-opinion' version '1.7.0'
     id "net.ltgt.apt" version "0.6"
 
     id "org.asciidoctor.convert" version "1.5.2"
@@ -32,8 +33,6 @@ repositories {
 
 group 'at.software-craftsmen'
 
-version "${System.getenv('BUILD_NUMBER')?: 'latest'}"
-
 ext {
     spockVersion = '1.1-groovy-2.4-rc-3'
     groovyVersion = '2.4.7'
@@ -47,7 +46,7 @@ testSets {
     sharedTest
     localIntegrationTest
     integrationTest
-    docsTest { dirName = 'docs'}
+    docsTest { dirName = 'docs' }
 }
 
 dependencies {
@@ -60,11 +59,11 @@ dependencies {
     compile("org.hibernate.javax.persistence:hibernate-jpa-2.1-api:1.0.0.Final")
     compile("org.projectlombok:lombok:$lombokVersion")
 
-    runtime ('org.springframework.data:spring-data-rest-hal-browser')
-    runtime ("org.postgresql:postgresql:9.4-1200-jdbc41") {
+    runtime('org.springframework.data:spring-data-rest-hal-browser')
+    runtime("org.postgresql:postgresql:9.4-1200-jdbc41") {
         exclude group: "org.slf4j", module: "slf4j-simple"
     }
-    runtime ("com.h2database:h2:1.4.191")
+    runtime("com.h2database:h2:1.4.191")
 
     testCompile "org.codehaus.groovy:groovy-all:$groovyVersion"
     testCompile("org.springframework:spring-test")
@@ -77,15 +76,15 @@ dependencies {
 
     docsTestCompile sourceSets.sharedTest.output
     docsTestCompile("org.springframework.boot:spring-boot-starter-test")
-    docsTestRuntime ("com.h2database:h2:1.4.191")
+    docsTestRuntime("com.h2database:h2:1.4.191")
 
     integrationTestCompile sourceSets.sharedTest.output
     integrationTestCompile("org.springframework.boot:spring-boot-starter-test")
-    integrationTestRuntime ("com.h2database:h2:1.4.191")
+    integrationTestRuntime("com.h2database:h2:1.4.191")
 
     localIntegrationTestCompile sourceSets.sharedTest.output
     localIntegrationTestCompile("org.springframework.boot:spring-boot-starter-test")
-    localIntegrationTestRuntime ("com.h2database:h2:1.4.191")
+    localIntegrationTestRuntime("com.h2database:h2:1.4.191")
 }
 
 test {
@@ -129,14 +128,26 @@ idea {
 build.dependsOn asciidoctor
 build.dependsOn localIntegrationTest
 
+
+publishing {
+    publications {
+        mavenBoot(MavenPublication) {
+            artifact(file("$buildDir/libs/$project.name-$project.version-${bootRepackage.classifier}.jar")) {
+                classifier 'exec'
+            }
+        }
+    }
+}
+
 bootRepackage {
     classifier = 'exec'
 }
 
 import org.apache.tools.ant.filters.ReplaceTokens
+
 ext {
-    dockerSrcDir="$projectDir/src/main/docker"
-    dockerBuildDir="$buildDir/docker"
+    dockerSrcDir = "$projectDir/src/main/docker"
+    dockerBuildDir = "$buildDir/docker"
 }
 
 task buildDockerContext(type: Copy) {
@@ -155,17 +166,6 @@ task buildDockerContext(type: Copy) {
     }
 }
 
-
-publishing {
-    publications {
-        mavenBoot(MavenPublication) {
-            artifact(file("$buildDir/libs/$project.name-$project.version-${bootRepackage.classifier}.jar")) {
-                classifier 'exec'
-            }
-       }
-    }
-}
-
 bintray {
     user = project.hasProperty('bintrayUser') ? project.property('bintrayUser') : System.getenv('BINTRAY_USER')
     key = project.hasProperty('bintrayApiKey') ? project.property('bintrayApiKey') : System.getenv('BINTRAY_API_KEY')
@@ -181,5 +181,11 @@ bintray {
         version {
             name = project.version
         }
+    }
+}
+
+task dumpVersion() {
+    doLast {
+        println project.version
     }
 }
