@@ -27,7 +27,7 @@ The `workspace` directory must exist on the Docker host. Create it before if usi
 `docker-machine ssh <machine-id> "mkdir /workspace"`
 --
 
-=== Use local Jenkins workspace
+=== Use local Jenkins workspace with Docker for Mac/Windows
 
 [source,bash]
 ----
@@ -37,7 +37,7 @@ docker-compose -f docker-compose-jenkins.yml -f docker-compose-jenkins-agent.yml
 
 === Use local source repositories
 
-Add and load an additional docker-compose YML configuration such as:
+Add and load an additional docker-compose configuration such as:
 
 [source,bash]
 ----
@@ -49,47 +49,97 @@ include::docker-compose-local-repositories.yml[linenums]
 docker-compose -f docker-compose-jenkins.yml -f docker-compose-jenkins-agent.yml -f docker-compose-local-repositories.yml up -d
 ----
 
+=== Auto-register global properties
+
+In order to have global properties available, assign a list of variable names to the enironment variable `JENKINS_GLOBAL_PROPERTIES_IMPORT`.
+
+[source,bash]
+----
+JENKINS_GLOBAL_PROPERTIES_IMPORT=GRADLE_OPTS,DOCKER_REGISTRY
+----
+
+=== Auto-register credentials
+
+The Jenkins build pipeline requires credentials for accessing various system resources.
+Set the following environment variables:
+
+.Credential` id `scm
+[source,bash]
+----
+SCM_USER=MartinAhrer
+SCM_PASSWORD=***
+----
+
+.Credential id `dockerRegistryDeployer`
+[source,bash]
+----
+DOCKER_REGISTRY_USER=admin
+DOCKER_REGISTRY_PASSWORD=***
+----
+
 == Run Nexus
+
+This runs a Nexus3 instance which we use as a Docker registry.
 
 [source,bash]
 ----
 docker-compose -f docker-compose-nexus.yml -f docker-compose-nexus-docker-registry.yml up -d
 ----
 
+In order to fix permissions for the docker registry blob volume run the following command
+[source,bash]
+----
+docker-compose exec --user root repository bash -c "chown -R nexus:nexus /nexus-docker-data/"
+----
+
 === Configure Nexus
 
-.blob store
-Type: File
-Name: docker-registry:
-Path: /nexus-docker-data/blobs/docker-registry
+.Setup blob store with
+|===
+|Field |Value
 
-.Docker registry and connector
-Type: docker(hosted),
-Name: docker-local-releases,
-Blob store: docker-registry,
-Connector: HTTP, port 5000
+|Type
+|File
 
-.Deployment policy
-Disable redeploy
+|Name
+|docker-registry
 
-=== Configure Jenkins
+|Path
+|/nexus-docker-data/blobs/docker-registry
+|===
 
-.Add domain "Nexus"
-Name: Nexus
-Description: Nexus artifact manager and docker registry
+.Create Docker repository and connector with
+|===
+|Field |Value
 
-.Add credential
-ID: nexus-deployer
-Description: Credentials for deploying to the Docker registry
+|Type
+|docker(hosted)
+
+|Name
+|docker-local-releases
+
+|Connector
+|HTTP, port 5000
+
+|Blob store
+|docker-registry
+
+|Deployment policy
+|Disable redeploy
+|===
+
+NOTE: We disallow redeploy to avoid Docker `latest` style image tags.
 
 === Configure docker-daemon unsecure registry
 
-.Add docker-registry to /etc/hosts
+.Add docker-registry to `/etc/hosts`
+[source,bash]
 ----
  127.0.0.1 docker-registry
 ----
 
 .Add insecure registry to daemon config
+[source,bash]
 ----
 docker-registry:15000
 ----

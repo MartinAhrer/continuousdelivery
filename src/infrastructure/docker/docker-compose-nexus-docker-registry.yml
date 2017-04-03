@@ -1,4 +1,6 @@
-version: "2"
+# See README.adoc for instructions on completing the configuration of the docker-registry
+
+version: "2.1"
 
 services:
   repository:

@@ -1,14 +1,14 @@
 #
 # Add Jenkins swarm agent
 #
-version: '2'
+version: '2.1'
 
 services:
   master:
     ports:
       - "${JENKINS_AGENT_PORT}:50000"
   agent:
-    image: softwarecraftsmen/jenkins-swarm-agent:0.2
+    image: softwarecraftsmen/jenkins-swarm-agent:0.3
     restart: always
     hostname: agent
     environment:

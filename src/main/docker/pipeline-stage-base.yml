@@ -11,6 +11,6 @@ services:
       - GRADLE_OPTS
       - APP_TAG
     volumes:
-      - ${PROJECT_DIR}:/project
+      - ${PROJECT_DIR}:/workspace
       - dot_gradle:/root/.gradle
-    working_dir: "/project"
+    working_dir: "/workspace"

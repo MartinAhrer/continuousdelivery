@@ -3,7 +3,7 @@
 #
 # Adjust the host directory to fit local directory structure. This file is just an example.
 #
-version: '2'
+version: '2.1'
 
 services:
   master:

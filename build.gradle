@@ -184,7 +184,7 @@ bintray {
     }
 }
 
-task dumpVersion() {
+task releaseVersion() {
     doLast {
         println project.version
     }

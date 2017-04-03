@@ -1,14 +1,22 @@
-version: '2'
+version: '2.1'
 
 services:
   master:
     image: softwarecraftsmen/jenkins-master:${JENKINS_TAG}
+    build: ./jenkins
     restart: always
     environment:
       - JAVA_OPTS = "-Djava.awt.headless=true"
       - JENKINS_URL
       - JENKINS_ADMIN_USERNAME
       - JENKINS_ADMIN_PASSWORD
+      - DOCKER_REGISTRY
+      - GRADLE_OPTS
+      - JENKINS_GLOBAL_PROPERTIES_IMPORT
+      - SCM_USER
+      - SCM_PASSWORD
+      - DOCKER_REGISTRY_USER
+      - DOCKER_REGISTRY_PASSWORD
     ports:
       - "${JENKINS_HTTP_PORT}:8080"
     volumes:
@@ -17,3 +25,7 @@ services:
 volumes:
   home:
     driver: local
+
+networks:
+  default:
+    driver: bridge

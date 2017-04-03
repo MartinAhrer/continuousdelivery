@@ -12,6 +12,7 @@ services:
       - TEST_SERVER_PORT=${APP_PORT}
     depends_on:
       - app
+         #condition: service_healthy
     networks:
       - app
 

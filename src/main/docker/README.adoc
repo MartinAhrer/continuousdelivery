@@ -27,6 +27,8 @@ Build is running the following tasks
 
 All compose triggered tasks that execute Gradle tasks have to run with the project root directory as current directory.
 
+IMPORTANT: Run from project root.
+
 .Run tests and build the Docker context
 [source,bash]
 ----
@@ -44,6 +46,8 @@ TODO
 ## Run integration test
 
 This will startup a _production-like_ environment and runs a suite of integration tests.
+
+IMPORTANT: Run from project root.
 
 [source,bash]
 ----
