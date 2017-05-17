@@ -8,7 +8,7 @@ import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.boot.test.SpringApplicationConfiguration
+import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.restdocs.JUnitRestDocumentation
 import org.springframework.restdocs.mockmvc.RestDocumentationResultHandler
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner
@@ -30,12 +30,13 @@ import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.docu
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.documentationConfiguration
 import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.get
 import static org.springframework.restdocs.operation.preprocess.Preprocessors.*
-import static org.springframework.restdocs.payload.PayloadDocumentation.*
+import static org.springframework.restdocs.payload.PayloadDocumentation.fieldWithPath
+import static org.springframework.restdocs.payload.PayloadDocumentation.responseFields
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 
 @RunWith(SpringJUnit4ClassRunner.class)
-@SpringApplicationConfiguration(classes = Application)
+@SpringBootTest(classes=Application.class)
 @WebAppConfiguration
 class GeneralApiDocumentation {
 
@@ -78,7 +79,7 @@ class GeneralApiDocumentation {
         this.mockMvc.perform(get("/api/"))
                 .andExpect(status().isOk())
                 .andDo(documentationHandler.document(responseHeaders(
-                    headerWithName("Content-Type").description("The Content-Type of the payload, e.g. `application/hal+json`")))
+                headerWithName("Content-Type").description("The Content-Type of the payload, e.g. `application/hal+json`")))
         )
     }
 
@@ -97,11 +98,11 @@ class GeneralApiDocumentation {
                 .andExpect(MockMvcResultMatchers.jsonPath("status", is(400)))
                 .andExpect(MockMvcResultMatchers.jsonPath("path", is(notNullValue())))
                 .andDo(documentationHandler.document(responseFields(
-                    fieldWithPath("error").description("The HTTP error that occurred, e.g. `Bad Request`"),
-                    fieldWithPath("message").description("A description of the cause of the error"),
-                    fieldWithPath("path").description("The path to which the request was made"),
-                    fieldWithPath("status").description("The HTTP status code, e.g. `400`"),
-                    fieldWithPath("timestamp").description("The time, in milliseconds, at which the error occurred"))))
+                fieldWithPath("error").description("The HTTP error that occurred, e.g. `Bad Request`"),
+                fieldWithPath("message").description("A description of the cause of the error"),
+                fieldWithPath("path").description("The path to which the request was made"),
+                fieldWithPath("status").description("The HTTP status code, e.g. `400`"),
+                fieldWithPath("timestamp").description("The time, in milliseconds, at which the error occurred"))))
     }
 
     @Test
@@ -109,9 +110,9 @@ class GeneralApiDocumentation {
         this.mockMvc.perform(get("/api/"))
                 .andExpect(status().isOk())
                 .andDo(documentationHandler.document(links(
-                        linkWithRel("companies").description("The <<resources-companies,Companies resource>>"),
-                        linkWithRel("profile").description("The <<resources-profile,Profile resource>>")),
-                    responseFields(
+                linkWithRel("companies").description("The <<resources-companies,Companies resource>>"),
+                linkWithRel("profile").description("The <<resources-profile,Profile resource>>")),
+                responseFields(
                         fieldWithPath("_links").description("<<resources-index-links,Links>> to other resources")))
         )
     }

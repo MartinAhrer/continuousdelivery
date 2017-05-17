@@ -9,7 +9,7 @@ import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.boot.test.SpringApplicationConfiguration
+import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.hateoas.MediaTypes
 import org.springframework.restdocs.JUnitRestDocumentation
 import org.springframework.restdocs.constraints.ConstraintDescriptions
@@ -34,10 +34,8 @@ import static org.springframework.restdocs.payload.PayloadDocumentation.*
 import static org.springframework.restdocs.snippet.Attributes.key
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 
-//@SpringBootTest(classes = Application, webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-
 @RunWith(SpringJUnit4ClassRunner.class)
-@SpringApplicationConfiguration(classes = Application)
+@SpringBootTest(classes = Application)
 @WebAppConfiguration
 class CompanyApiDocumentation {
 

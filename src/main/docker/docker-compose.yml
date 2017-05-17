@@ -28,6 +28,7 @@ services:
       - SPRING_DATASOURCE_USERNAME
       - SPRING_DATASOURCE_PASSWORD
       - SPRING_JPA_GENERATE_DDL
+      - LOGSTASH_SOCKET_ADDRESS
     depends_on:
       - postgresdb
     restart: always
