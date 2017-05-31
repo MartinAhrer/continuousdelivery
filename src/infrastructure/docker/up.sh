@@ -3,7 +3,7 @@ set -x
 
 __dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
-export JENKINS_URL=http://$(ipconfig getifaddr en0):8080
+export JENKINS_URL=http://$(ipconfig getifaddr en0):18080
 docker-compose up -d
 # This fixes the permissions on the nexus-docker-data volume.
 # Otherwise we would have to hard-code this into a docker image.

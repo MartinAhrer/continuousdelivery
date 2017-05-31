@@ -1,0 +1,126 @@
+= Presentation demo story
+
+`cd $WORKSPACE_DEFAULT/continuousdelivery`
+
+`cd src/infrastructure/docker`
+
+== docker-compose CLI configuration
+
+.`.env` for docker-compose CLI
+[source,bash]
+----
+include::0.env.compose-cli-configuration[]
+----
+<1> The project name is used for naming the containers
+<2> YML to load for docker-compose configuration
+<3> Timeout for docker-compose operations (stop/kill)
+
+[source,bash]
+----
+cat ../presentation-story/0.env.compose-cli-configuration > .env
+----
+
+WARNING: Remove # <?> comments from `.env` entries!
+
+== Add Jenkins
+
+We are adding the compose configurations included in `jenkins-master.yml`.
+
+.`.env` for Jenkins master
+[source,bash]
+----
+COMPOSE_FILE=jenkins-master.yml
+include::1.env.jenkins-master[]
+----
+<1> Tag for bulding/pulling the master image
+<2> The master container port mapped to the host
+<3> This will create admin credentials
+<4> This will create admin credentials
+
+[source,bash]
+----
+cat ../presentation-story/1.env.jenkins-master >> .env
+----
+
+WARNING: Remove # <?> comments from `.env` entries!
+
+.Assign Jenkins a host bound URL
+[source,bash]
+----
+export JENKINS_URL=http://$(ipconfig getifaddr en0):18080
+----
+
+We can now start Jenkins using the command `docker-compose up -d` and go to its user interface with `open $JENKINS_URL`.
+
+== Add Jenkins Agent
+
+We are adding the compose configurations included in `jenkins-agent.yml`.
+
+[source,bash]
+.`.env` for Jenkins agent
+----
+COMPOSE_FILE=jenkins-master.yml:jenkins-agent.yml
+include::2.env.jenkins-agent[]
+----
+<1> This port is used for master <--> agent communication
+<2> Setup executors to allow n parallel job executions
+<3> DooD does not implement a filesystem, needs a filesystem provided by the host system
+
+[source,bash]
+----
+cat ../presentation-story/2.env.jenkins-agent >> .env
+----
+
+WARNING: Remove # <?> comments from `.env` entries!
+
+We can now start Jenkins using the command `docker-compose up -d` and go to its user interface with `open $JENKINS_URL`.
+The agent has been registered with the master.
+
+== Add Nexus
+
+We are adding the compose configurations included in `nexus-docker-registry.yml` and `nexus.yml`.
+
+[source,bash]
+.`.env` for Nexus
+----
+COMPOSE_FILE=nexus-docker-registry.yml:nexus.yml:jenkins-master.yml:jenkins-agent.yml
+include::3.env.nexus[]
+----
+<1> Tag for bulding/pulling the nexus image
+<2> The Nexus container port mapped to the host
+<3> The Nexus docker registry connector port mapped to the host
+
+
+[source,bash]
+----
+cat ../presentation-story/3.env.nexus >> .env
+----
+
+WARNING: Remove # <?> comments from `.env` entries!
+
+== Add build pipeline
+
+[source,bash]
+.`.env` for build pipeline configuration
+----
+include::4.env.build-pipeline[]
+----
+<1> Imported into the Jenkins master global properties through `GlobalProperties.groovy`
+<2> In a build environment it is not recommended to run the Gradle daemon
+<3> The URL used by the pipeline script to address the docker registry
+<4> Imported as `scm` credentials by `ScmCredentials.groovy`
+<5> Imported as `scm` credentials by `ScmCredentials.groovy`. Generate using github.com
+<6> Imported as `dockerRegistryDeployer` credentials by `DockerRegistryCredentials.groovy`
+<7> Imported as `dockerRegistryDeployer` credentials by `DockerRegistryCredentials.groovy`
+
+[source,bash]
+----
+cat ../presentation-story/4.env.build-pipeline >> .env
+----
+
+WARNING: Remove # <?> comments from `.env` entries!
+
+We are now ready to add the pipeline script from our Git repository at https://github.com/SoftwareCraftsmen/continuousdelivery.git .
+The pipeline script path is `jenkins/Jenkinsfile.groovy`.
+
+Before we can run it we have to setup the Docker registry as described in `README.adoc`.

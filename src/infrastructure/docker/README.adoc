@@ -18,7 +18,7 @@ This runs a Jenkins master and agent.
 ----
 export JENKINS_AGENT_WORKSPACE=/workspace
 export JENKINS_AGENT_EXECUTORS=5
-docker-compose -f docker-compose-jenkins.yml -f docker-compose-jenkins-agent.yml up -d
+docker-compose -f jenkins-master.yml -f jenkins-agent.yml up -d
 ----
 
 [IMPORTANT]
@@ -32,7 +32,7 @@ The `workspace` directory must exist on the Docker host. Create it before if usi
 [source,bash]
 ----
 export JENKINS_AGENT_WORKSPACE=$PWD/workspace
-docker-compose -f docker-compose-jenkins.yml -f docker-compose-jenkins-agent.yml up -d
+docker-compose -f jenkins-master.yml -f jenkins-agent.yml up -d
 ----
 
 === Use local source repositories
@@ -41,12 +41,12 @@ Add and load an additional docker-compose configuration such as:
 
 [source,bash]
 ----
-include::docker-compose-local-repositories.yml[linenums]
+include::local-repositories.yml[linenums]
 ----
 
 [source,bash]
 ----
-docker-compose -f docker-compose-jenkins.yml -f docker-compose-jenkins-agent.yml -f docker-compose-local-repositories.yml up -d
+docker-compose -f jenkins-master.yml -f jenkins-agent.yml -f local-repositories.yml up -d
 ----
 
 === Auto-register global properties
@@ -83,7 +83,7 @@ This runs a Nexus3 instance which we use as a Docker registry.
 
 [source,bash]
 ----
-docker-compose -f docker-compose-nexus.yml -f docker-compose-nexus-docker-registry.yml up -d
+docker-compose -f nexus.yml -f nexus-docker-registry.yml up -d
 ----
 
 In order to fix permissions for the docker registry blob volume run the following command
