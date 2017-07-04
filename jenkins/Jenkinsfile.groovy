@@ -6,32 +6,9 @@
 // credentials:
 //  - dockerRegistryDeployer
 //  - scm
-
-/**
- * Run an action that requires a Docker registry authentication.
- * @param credentialsId the credentials for the registry authentication will be pulled from the Jenkins credentials store using this credentials id.
- * @param action the registry action to run authenticated.
- */
-def withDockerRegistry(String credentialsId = 'dockerRegistryDeployer', Closure action) {
-    def dockerCredentials = usernamePassword(credentialsId: credentialsId, passwordVariable: 'DOCKER_REGISTRY_PASSWORD', usernameVariable: 'DOCKER_REGISTRY_USER')
-    withCredentials([dockerCredentials]) {
-        def registry = env.DOCKER_REGISTRY
-        sh 'docker login --username=${DOCKER_REGISTRY_USER} --password=${DOCKER_REGISTRY_PASSWORD} ' + registry
-        try {
-            action(registry)
-        }
-        finally {
-            sh "docker logout ${registry}"
-        }
-    }
-}
-
-def setupVolume() {
-    def volume = sh(returnStdout: true, script: 'docker volume ls --filter name=dot_gradle -q').trim()
-    if (!volume) {
-        sh 'docker volume create --name dot_gradle'
-    }
-}
+// shared-library
+//  - docker:https://github.com/SoftwareCraftsmen/jenkins-docker-shared-library@v0.2
+//  - gradle:https://github.com/SoftwareCraftsmen/jenkins-gradle-shared-library@master
 
 def composeFile(List items, CharSequence prefix = ' -f ') {
     def joined = ""
@@ -56,29 +33,15 @@ def runWithDockerCompose(String container, Closure composeArguments) {
     }
 }
 
-/**
- * Run simple 'one-shot' build step commands (primarily Gradle commands) inside a docker container.
- * @param map arguments
- * @param commandBuilder a closure building the command to be executed inside a container.
- * @return result of {@code sh} execution.
- */
-def runWithDocker(Map map = [:], Closure commandBuilder) {
-    def args = [image: 'openjdk:8-jdk', workspace: "${env.JENKINS_AGENT_WORKSPACE}/${env.JOB_NAME}", returnStdout: false] << map
-
-    def dockerRunOptions = "--rm -v ${args.workspace}:/workspace -v dot_gradle:/root/.gradle --workdir=/workspace"
-    for (Map.Entry variable : args.environment) {
-        dockerRunOptions <<= " -e ${variable.key}=\"${variable.value}\""
-    }
-    return sh(script: "docker run ${dockerRunOptions} ${args.image} ${commandBuilder()}", returnStdout: args.returnStdout)
-}
-
+library 'docker'
+library 'gradle@master'
 
 node('docker') {
     def tag = env.BUILD_NUMBER
 
     stage('prepare') {
         checkout scm
-        setupVolume()
+        dockerVolume.createIf 'dot_m2'
     }
     /**
      * As we are using DooD, we have to calculate an absolute host path for the job workspace.
@@ -104,19 +67,17 @@ node('docker') {
                             "APP_HOST=app",
                             "APP_PORT=8080"]
     def releaseEnv = []
-    final gradleOptions = env.GRADLE_OPTS ? ['GRADLE_OPTS': env.GRADLE_OPTS] : [:]
 
     stage('build') {
-        tag = runWithDocker(environment: gradleOptions, returnStdout: true) {
+        tag = gradleContainer([returnStdout:true],
             './gradlew --no-daemon --quiet -Prelease.scope=patch -Prelease.stage=milestone releaseVersion'
-        }
+        )
         .trim()
 
         releaseEnv = ["APP_TAG=${tag}"]
 
-        runWithDocker(environment: gradleOptions) {
-            './gradlew --no-daemon --quiet -Prelease.scope=patch -Prelease.stage=milestone clean asciidoctor assemble buildDockerContext'
-        }
+        gradleContainer(
+            './gradlew --no-daemon --quiet -Prelease.scope=patch -Prelease.stage=milestone clean asciidoctor assemble buildDockerContext')
         junit("build/docsTest-results/*.xml")
 
         withEnv(dockerComposeEnv + releaseEnv) {
@@ -137,9 +98,8 @@ node('docker') {
 
                 def scmCredentials = usernamePassword(credentialsId: 'scm', usernameVariable: 'GRGIT_USER', passwordVariable: 'GRGIT_PASS')
                 withCredentials([scmCredentials]) {
-                    runWithDocker(environment: gradleOptions) {
-                        './gradlew --no-daemon --quiet -Prelease.scope=patch -Prelease.stage=milestone -Dorg.ajoberstar.grgit.auth.force=hardcoded -Dorg.ajoberstar.grgit.auth.username=$GRGIT_USER -Dorg.ajoberstar.grgit.auth.password=$GRGIT_PASS --stacktrace release'
-                    }
+                    gradleContainer(
+                        './gradlew --no-daemon --quiet -Prelease.scope=patch -Prelease.stage=milestone -Dorg.ajoberstar.grgit.auth.force=hardcoded -Dorg.ajoberstar.grgit.auth.username=$GRGIT_USER -Dorg.ajoberstar.grgit.auth.password=$GRGIT_PASS --stacktrace release')
                 }
             }
             junit("build/integrationTest-results/*.xml")
@@ -149,7 +109,8 @@ node('docker') {
     stage('deliver') {
         dir('build/docker') {
             withEnv(dockerComposeEnv + releaseEnv) {
-                withDockerRegistry { def registry ->
+                withDockerRegistry([credentialsId: 'dockerRegistryDeployer',
+                                    url: "http://${env.DOCKER_REGISTRY}"]) {
                     try {
                         sh "docker-compose push"
                     }
