@@ -7,7 +7,9 @@
         <appender name="LOGSTASH" class="net.logstash.logback.appender.LogstashTcpSocketAppender">
             <destination>${LOGSTASH_SOCKET_ADDRESS}</destination>
             <encoder class="net.logstash.logback.encoder.LogstashEncoder">
-                <customFields>{"service_name":"continuousdelivery"}</customFields>
+                <customFields>
+                    {"service_name":"continuousdelivery", "deployment_stage": "${DEPLOYMENT_STAGE}"}
+                </customFields>
             </encoder>
             <keepAliveDuration>5 minutes</keepAliveDuration>
         </appender>
