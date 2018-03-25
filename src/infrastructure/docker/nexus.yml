@@ -8,6 +8,9 @@ services:
     restart: always
     volumes:
       - data:/nexus-data
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://repository:8081"]
+      timeout: 5s
 
 volumes:
   data: {}
