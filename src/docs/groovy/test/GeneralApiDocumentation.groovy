@@ -30,13 +30,12 @@ import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.docu
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.documentationConfiguration
 import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.get
 import static org.springframework.restdocs.operation.preprocess.Preprocessors.*
-import static org.springframework.restdocs.payload.PayloadDocumentation.fieldWithPath
-import static org.springframework.restdocs.payload.PayloadDocumentation.responseFields
+import static org.springframework.restdocs.payload.PayloadDocumentation.*
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 
-@RunWith(SpringJUnit4ClassRunner.class)
-@SpringBootTest(classes=Application.class)
+@RunWith(SpringJUnit4ClassRunner)
+@SpringBootTest(classes = Application)
 @WebAppConfiguration
 class GeneralApiDocumentation {
 
@@ -58,9 +57,8 @@ class GeneralApiDocumentation {
     @Autowired
     private CompanyRepository companyRepository;
 
-
     @Before
-    public void setUp() {
+    void setUp() {
         this.documentationHandler = document("{method-name}",
                 preprocessRequest(prettyPrint()),
                 preprocessResponse(prettyPrint()));
@@ -69,13 +67,10 @@ class GeneralApiDocumentation {
                 .apply(documentationConfiguration(this.restDocumentation))
                 .alwaysDo(this.documentationHandler)
                 .build()
-
-        return
     }
 
     @Test
-    public void headersExample() throws Exception {
-
+    void headersExample() throws Exception {
         this.mockMvc.perform(get("/api/"))
                 .andExpect(status().isOk())
                 .andDo(documentationHandler.document(responseHeaders(
@@ -84,7 +79,7 @@ class GeneralApiDocumentation {
     }
 
     @Test
-    public void errorExample() throws Exception {
+    void errorExample() throws Exception {
         this.mockMvc
                 .perform(get("/error")
                 .requestAttr(RequestDispatcher.ERROR_STATUS_CODE, 400)
@@ -106,14 +101,16 @@ class GeneralApiDocumentation {
     }
 
     @Test
-    public void indexExample() throws Exception {
+    void indexExample() throws Exception {
         this.mockMvc.perform(get("/api/"))
                 .andExpect(status().isOk())
-                .andDo(documentationHandler.document(links(
-                linkWithRel("companies").description("The <<resources-companies,Companies resource>>"),
-                linkWithRel("profile").description("The <<resources-profile,Profile resource>>")),
-                responseFields(
-                        fieldWithPath("_links").description("<<resources-index-links,Links>> to other resources")))
+                .andDo(
+                documentationHandler.document(
+                        links(
+                                linkWithRel("companies").description("The <<resources-companies,Companies resource>>"),
+                                linkWithRel("profile").description("The <<resources-profile,Profile resource>>")),
+                        responseFields(
+                                subsectionWithPath("_links").description("<<resources-index-links,Links>> to other resources")))
         )
     }
 }

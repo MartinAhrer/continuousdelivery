@@ -12,14 +12,11 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.hateoas.MediaTypes
 import org.springframework.restdocs.JUnitRestDocumentation
-import org.springframework.restdocs.constraints.ConstraintDescriptions
 import org.springframework.restdocs.mockmvc.RestDocumentationResultHandler
-import org.springframework.restdocs.payload.FieldDescriptor
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner
 import org.springframework.test.context.web.WebAppConfiguration
 import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.setup.MockMvcBuilders
-import org.springframework.util.StringUtils
 import org.springframework.web.context.WebApplicationContext
 import shared.CompanyResourceFactory
 
@@ -31,7 +28,6 @@ import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuild
 import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.post
 import static org.springframework.restdocs.operation.preprocess.Preprocessors.*
 import static org.springframework.restdocs.payload.PayloadDocumentation.*
-import static org.springframework.restdocs.snippet.Attributes.key
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 
 @RunWith(SpringJUnit4ClassRunner.class)
@@ -42,24 +38,24 @@ class CompanyApiDocumentation {
     Closure<String> VALUE_WRITER = { def content -> this.objectMapper.writeValueAsString(content) }
 
     @Rule
-    public JUnitRestDocumentation restDocumentation = new JUnitRestDocumentation("build/generated-snippets/company");
+    public JUnitRestDocumentation restDocumentation = new JUnitRestDocumentation("build/generated-snippets/company")
 
     @Autowired
-    private WebApplicationContext context;
+    private WebApplicationContext context
 
     @Autowired
-    private ObjectMapper objectMapper;
+    private ObjectMapper objectMapper
 
-    private RestDocumentationResultHandler documentationHandler;
+    private RestDocumentationResultHandler documentationHandler
 
-    private MockMvc mockMvc;
+    private MockMvc mockMvc
 
     @Autowired
-    private CompanyRepository companyRepository;
+    private CompanyRepository companyRepository
 
 
     @Before
-    public void setUp() {
+    void setUp() {
         this.documentationHandler = document("{method-name}",
                 preprocessRequest(prettyPrint()),
                 preprocessResponse(prettyPrint()))
@@ -83,7 +79,7 @@ class CompanyApiDocumentation {
     }
 
     @Test
-    public void listExample() {
+    void listExample() {
         this.mockMvc.perform(get("/api/companies").accept(MediaTypes.HAL_JSON))
                 .andExpect(status().isOk())
                 .andDo(documentationHandler.document(
@@ -92,16 +88,14 @@ class CompanyApiDocumentation {
                         linkWithRel("profile").description("The <<resources-companies-profile, companies profile resource>>")),
 
                     responseFields(
-                        fieldWithPath("_embedded.companies").description("An array of <<resources-companies, Company resources>>"),
-                        fieldWithPath("_links").description("<<resources-companies-links,Links>> to other resources"),
-                        fieldWithPath("page").description("The pagination information")))
+                            subsectionWithPath("_embedded.companies").description("An array of <<resources-companies, Company resources>>"),
+                            subsectionWithPath("_links").description("<<resources-companies-links,Links>> to other resources"),
+                            subsectionWithPath("page").description("The pagination information")))
         )
     }
 
     @Test
-    public void getByIdExample() {
-        ConstrainedFields fields = new ConstrainedFields(Company);
-
+    void getByIdExample() {
         this.mockMvc.perform(get("/api/companies/1").accept(MediaTypes.HAL_JSON))
                 .andExpect(status().isOk())
                 .andDo(documentationHandler.document(
@@ -111,39 +105,26 @@ class CompanyApiDocumentation {
                     ),
                     responseFields(
                         fieldWithPath("new").ignored(),
-                        fields.withPath("name").description("The name of the company"),
-                        fields.withPath("address").description("The address of the company"),
-                        fieldWithPath("_links").description("<<resources-companies-links,Links>> to other resources")))
+                            fieldWithPath("name").description("The name of the company"),
+                            subsectionWithPath("address").description("The address of the company"),
+                            subsectionWithPath("_links").description("<<resources-companies-links,Links>> to other resources")))
         )
     }
 
     @Test
-    public void createExample() throws Exception {
+    void createExample() throws Exception {
         def resource = new CompanyResourceFactory(contentWriter: VALUE_WRITER).newResource();
-
-        ConstrainedFields fields = new ConstrainedFields(Company)
 
         this.mockMvc.perform(
                 post("/api/companies").contentType(MediaTypes.HAL_JSON).content(resource))
                 .andExpect(status().isCreated())
                 .andDo(documentationHandler.document(
                     requestFields(
-                        fields.withPath("name").description("The name of the company"),
-                        fields.withPath("address").optional().description("The address of the company"))))
-    }
-
-    private static class ConstrainedFields {
-
-        private final ConstraintDescriptions constraintDescriptions;
-
-        ConstrainedFields(Class<?> input) {
-            this.constraintDescriptions = new ConstraintDescriptions(input);
-        }
-
-        private FieldDescriptor withPath(String path) {
-            return fieldWithPath(path).attributes(key("constraints").value(StringUtils
-                    .collectionToDelimitedString(this.constraintDescriptions
-                    .descriptionsForProperty(path), ". ")));
-        }
+                            fieldWithPath("name")
+                                    .description("The name of the company"),
+                            subsectionWithPath("address")
+                                    .description("The address of the company")
+                                    .optional(),
+                    )))
     }
 }
