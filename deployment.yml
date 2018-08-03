@@ -1,0 +1,72 @@
+apiVersion: v1
+items:
+- apiVersion: extensions/v1beta1
+  kind: Deployment
+  metadata:
+    annotations:
+      deployment.kubernetes.io/revision: "1"
+    creationTimestamp: 2018-06-13T18:23:03Z
+    generation: 1
+    labels:
+      run: continuousdelivery-app
+    name: continuousdelivery-app
+    namespace: default
+    resourceVersion: "3877"
+    selfLink: /apis/extensions/v1beta1/namespaces/default/deployments/continuousdelivery-app
+    uid: cf57149e-6f36-11e8-bed8-a61d34dfa669
+  spec:
+    progressDeadlineSeconds: 600
+    replicas: 1
+    revisionHistoryLimit: 10
+    selector:
+      matchLabels:
+        run: continuousdelivery-app
+    strategy:
+      rollingUpdate:
+        maxSurge: 1
+        maxUnavailable: 1
+      type: RollingUpdate
+    template:
+      metadata:
+        creationTimestamp: null
+        labels:
+          run: continuousdelivery-app
+      spec:
+        containers:
+        - image: continuousdelivery-app:1.0
+          imagePullPolicy: IfNotPresent
+          name: continuousdelivery-app
+          ports:
+          - containerPort: 8080
+            protocol: TCP
+          resources: {}
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
+        dnsPolicy: ClusterFirst
+        restartPolicy: Always
+        schedulerName: default-scheduler
+        securityContext: {}
+        terminationGracePeriodSeconds: 30
+  status:
+    availableReplicas: 1
+    conditions:
+    - lastTransitionTime: 2018-06-13T18:23:03Z
+      lastUpdateTime: 2018-06-13T18:23:03Z
+      message: Deployment has minimum availability.
+      reason: MinimumReplicasAvailable
+      status: "True"
+      type: Available
+    - lastTransitionTime: 2018-06-13T18:23:03Z
+      lastUpdateTime: 2018-06-13T18:23:04Z
+      message: ReplicaSet "continuousdelivery-app-76b5fbf48d" has successfully progressed.
+      reason: NewReplicaSetAvailable
+      status: "True"
+      type: Progressing
+    observedGeneration: 1
+    readyReplicas: 1
+    replicas: 1
+    updatedReplicas: 1
+kind: List
+metadata:
+  resourceVersion: ""
+  selfLink: ""

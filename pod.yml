@@ -1,0 +1,99 @@
+apiVersion: v1
+items:
+- apiVersion: v1
+  kind: Pod
+  metadata:
+    creationTimestamp: 2018-06-13T18:23:03Z
+    generateName: continuousdelivery-app-76b5fbf48d-
+    labels:
+      pod-template-hash: "3261969048"
+      run: continuousdelivery-app
+    name: continuousdelivery-app-76b5fbf48d-xvkbj
+    namespace: default
+    ownerReferences:
+    - apiVersion: extensions/v1beta1
+      blockOwnerDeletion: true
+      controller: true
+      kind: ReplicaSet
+      name: continuousdelivery-app-76b5fbf48d
+      uid: cf5880ba-6f36-11e8-bed8-a61d34dfa669
+    resourceVersion: "52058"
+    selfLink: /api/v1/namespaces/default/pods/continuousdelivery-app-76b5fbf48d-xvkbj
+    uid: cf5fa4f1-6f36-11e8-bed8-a61d34dfa669
+  spec:
+    containers:
+    - image: continuousdelivery-app:1.0
+      imagePullPolicy: IfNotPresent
+      name: continuousdelivery-app
+      ports:
+      - containerPort: 8080
+        protocol: TCP
+      resources: {}
+      terminationMessagePath: /dev/termination-log
+      terminationMessagePolicy: File
+      volumeMounts:
+      - mountPath: /var/run/secrets/kubernetes.io/serviceaccount
+        name: default-token-bq2th
+        readOnly: true
+    dnsPolicy: ClusterFirst
+    nodeName: minikube
+    restartPolicy: Always
+    schedulerName: default-scheduler
+    securityContext: {}
+    serviceAccount: default
+    serviceAccountName: default
+    terminationGracePeriodSeconds: 30
+    tolerations:
+    - effect: NoExecute
+      key: node.kubernetes.io/not-ready
+      operator: Exists
+      tolerationSeconds: 300
+    - effect: NoExecute
+      key: node.kubernetes.io/unreachable
+      operator: Exists
+      tolerationSeconds: 300
+    volumes:
+    - name: default-token-bq2th
+      secret:
+        defaultMode: 420
+        secretName: default-token-bq2th
+  status:
+    conditions:
+    - lastProbeTime: null
+      lastTransitionTime: 2018-06-13T18:23:03Z
+      status: "True"
+      type: Initialized
+    - lastProbeTime: null
+      lastTransitionTime: 2018-07-24T19:15:26Z
+      status: "True"
+      type: Ready
+    - lastProbeTime: null
+      lastTransitionTime: 2018-06-13T18:23:03Z
+      status: "True"
+      type: PodScheduled
+    containerStatuses:
+    - containerID: docker://9692df6d560c095c72fd5a2b9474bc770d98d692a35297b459aa46d1e5d7bf51
+      image: continuousdelivery-app:1.0
+      imageID: docker://sha256:35137c8425d1b35b52f1b5a399358cc314ac1c8f998bc71552538bda7e368d4d
+      lastState:
+        terminated:
+          containerID: docker://c92c240e9bd67504615e7e96fd4bb3055836121fb8d87a9debaddf10e05f7f0b
+          exitCode: 137
+          finishedAt: 2018-06-14T06:54:16Z
+          reason: Error
+          startedAt: 2018-06-13T18:23:04Z
+      name: continuousdelivery-app
+      ready: true
+      restartCount: 1
+      state:
+        running:
+          startedAt: 2018-07-24T19:15:23Z
+    hostIP: 192.168.64.11
+    phase: Running
+    podIP: 172.17.0.4
+    qosClass: BestEffort
+    startTime: 2018-06-13T18:23:03Z
+kind: List
+metadata:
+  resourceVersion: ""
+  selfLink: ""

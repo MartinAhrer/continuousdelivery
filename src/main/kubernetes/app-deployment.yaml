@@ -1,0 +1,38 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: continuousdelivery
+  labels:
+    app: continuousdelivery
+spec:
+  replicas: 1
+  strategy: {}
+  template:
+    metadata:
+      labels:
+        app: continuousdelivery
+    spec:
+      containers:
+      - name: continuousdelivery-app
+        image: continuousdelivery-app:1.0
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 8080
+        env:
+        - name: SPRING_DATASOURCE_URL
+          value: jdbc:postgresql://postgresdb/app
+        - name: SPRING_JPA_GENERATE_DDL
+          value: 'true'
+        - name: SPRING_DATASOURCE_USERNAME
+          valueFrom:
+            secretKeyRef:
+              name: datasource-secret
+              key: password
+        - name: SPRING_DATASOURCE_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: datasource-secret
+              key: username
+        resources: {}
+      restartPolicy: Always
+status: {}

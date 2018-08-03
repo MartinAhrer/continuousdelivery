@@ -1,0 +1,52 @@
+= README
+
+== Kubernetes
+
+=== Minikube
+
+minikube start --vm-driver=xhyve
+eval $(minikube docker-env)
+cd build/docker
+export APP_TAG=1.0 #set proper version number
+docker-compose build
+minikube dashboard
+
+
+=== Helm
+
+brew install kompose
+brew install kubernetes-helm
+
+=== kubectl imperative
+
+kubectl run continuousdelivery-app --image=continuousdelivery-app:${APP_TAG} --port=8080
+kubectl proxy # in an new terminal
+
+export POD_NAME=$(kubectl get pods -o go-template --template '{{range .items}}{{.metadata.name}}{{"\n"}}{{end}}')
+echo Name of the Pod: $POD_NAME
+kubectl logs $POD_NAME -f
+
+kubectl get deployment continuousdelivery-app -o yaml --export
+
+open http://localhost:8001/api/v1/namespaces/default/pods/$POD_NAME/proxy/api
+
+=== kubectl declarative
+
+cd src/main/kubernetes
+
+kubectl apply -f datasource_secret.yaml
+kubectl apply -f postgresdb-data-persistentvolumeclaim.yaml
+kubectl apply -f postgresdb-persistentvolumeclaim.yaml
+kubectl apply -f postgresdb-deployment.yaml
+kubectl apply -f postgresdb-service.yaml
+kubectl apply -f app-deployment.yaml
+kubectl apply -f app-service.yaml
+
+=== Nginx ingress
+
+minikube addons enable ingress
+
+kubectl apply -f app-ingress.yaml
+
+echo "$(minikube ip) continuousdelivery.minikube" | sudo tee -a /etc/hosts
+open http://continuousdelivery.minikube

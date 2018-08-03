@@ -1,0 +1,16 @@
+# https://github.com/nginxinc/kubernetes-ingress/tree/master/examples/customization
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: continuousdelivery
+  annotations:
+      nginx.ingress.kubernetes.io/rewrite-target: /
+spec:
+  rules:
+  - host: continuousdelivery.minikube
+    http:
+      paths:
+      - path: /
+        backend:
+          serviceName: continuousdelivery
+          servicePort: http

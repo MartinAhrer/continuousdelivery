@@ -1,9 +1,9 @@
-FROM openjdk:8-jre
+FROM openjdk:8-jdk-slim
 MAINTAINER Martin Ahrer <this@martinahrer.at>
 
 RUN mkdir /opt/app
 
-ADD continuousdelivery-@version@-exec.jar /opt/app/app.jar
+ADD continuousdelivery-@version@.jar /opt/app/app.jar
 
 EXPOSE 8080
 
