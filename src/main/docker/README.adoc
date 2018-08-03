@@ -1,6 +1,6 @@
 = README
 
-## Setup
+== Setup
 
 The compose project name is set as global variable, alternatively we can just add `--project-name continuousdelivery` to each compose command.
 
@@ -9,7 +9,7 @@ The compose project name is set as global variable, alternatively we can just ad
 export COMPOSE_PROJECT_NAME=continuousdelivery
 ----
 
-## Build
+== Build
 
 A build number is required for building all artifacts including the Docker image.
 
@@ -43,7 +43,7 @@ docker-compose -f src/main/docker/pipeline-build.yml run --rm build
 TODO
 ----
 
-## Run integration test
+== Run integration test
 
 This will startup a _production-like_ environment and runs a suite of integration tests.
 

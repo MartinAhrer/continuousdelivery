@@ -1,0 +1,19 @@
+kind: PersistentVolume
+apiVersion: v1
+metadata:
+  name: {{ template "continuousdelivery.fullname" . }}
+  labels:
+    app: {{ template "continuousdelivery.name" . }}
+    chart: {{ template "continuousdelivery.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+    type: local
+spec:
+  storageClassName: local
+  capacity:
+    storage: 2Gi
+  accessModes:
+  - ReadWriteOnce
+  hostPath:
+    path: "/var/volume/{{ .Release.Name }}/postgresdb"
+    type: DirectoryOrCreate

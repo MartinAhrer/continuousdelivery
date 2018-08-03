@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ template "continuousdelivery.fullname" . }}
+  labels:
+    app: {{ template "continuousdelivery.name" . }}
+    chart: {{ template "continuousdelivery.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+data:
+  create-database.sh: |
+    # DO NOT REMOVE, otherwise: "error converting YAML to JSON: yaml: line 13: did not find expected key"
+    {{ .Files.Get "create-database.sh" | indent 4 }}

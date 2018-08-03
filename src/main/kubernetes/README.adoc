@@ -1,0 +1,96 @@
+= README
+
+== Build application and push to Docker Hub
+
+[source, bash]
+----
+cd build/docker
+export DOCKER_REGISTRY=softwarecraftsmen/
+export APP_TAG=1.0 #set proper version number
+docker-compose build
+docker login --username softwarecraftsman
+docker-compose push
+----
+
+== kubectl imperative
+
+kubectl run continuousdelivery-app --image=continuousdelivery-app:${APP_TAG} --port=8080
+kubectl proxy # in an new terminal
+
+export POD_NAME=$(kubectl get pods -o go-template --template '{{range .items}}{{.metadata.name}}{{"\n"}}{{end}}')
+open http://localhost:8001/api/v1/namespaces/default/pods/$POD_NAME/proxy/api
+
+== Deploy application to Kubernetes cluster
+
+In order to configure kubectl, export the kubectl configuration (e.g. from Rancher) and add it to `KUBECONFIG_HOME``
+
+----
+export KUBECONFIG=$HOME/.kube/config:$HOME/.kube/docker01.software-craftsmen.at
+----
+
+Set the `demo` namespace to use with `kubens demo` and `cd src/main/kubernetes`.
+
+.Setup persistent storage
+[source, bash]
+----
+kubectl apply -f local-storageclass.yaml
+kubectl apply -f postgresdb-persistentvolume.yaml
+kubectl apply -f postgresdb-data-persistentvolumeclaim.yaml
+----
+
+NOTE: Whenever we rely on local storage we should agree on a common root for the local storage e.g `/var/volume` or `/var/k8s-local-storage`.
+
+WARNING: NOTE: Dynamic provisioning is not supported in beta. All local `PersistentVolume` must be statically created. PersistentVolumeSpec `local` isn't persisting any data from the container, therefore use `hostPath`
+
+.Setup deployments and services
+----
+kubectl apply -f datasource_secret.yaml
+kubectl apply -f postgresdb-deployment.yaml
+kubectl apply -f postgresdb-service.yaml
+kubectl apply -f app-deployment.yaml
+kubectl apply -f app-service.yaml
+----
+
+== Ingress
+
+=== Deploy ingress
+
+[source,bash]
+----
+kubectl apply -f app-ingress.yaml
+----
+
+=== Configure ingress for Minikube
+
+.Activate Nginx ingress
+[source,bash]
+----
+minikube addons enable ingress
+----
+
+.Add hostname to `/etc/hosts`
+[source,bash]
+----
+echo "$(minikube ip) continuousdelivery-demo.software-craftsmen.at" | sudo tee -a /etc/hosts
+open http://continuousdelivery-demo.software-craftsmen.at
+----
+
+== Helm
+
+=== Client Installation
+
+brew install kompose ???
+
+brew install kubernetes-helm
+
+=== Kubernetes Configuration
+
+helm init
+
+== Miscellaneous
+
+=== Connect Docker client to minikube
+
+minikube start --vm-driver=xhyve
+eval $(minikube docker-env)
+
