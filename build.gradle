@@ -1,12 +1,13 @@
 buildscript {
+    ext {
+        springBootVersion = '2.0.2.RELEASE'
+    }
     repositories {
-        jcenter()
-        maven { url "http://repo.spring.io/snapshot" }
-        maven { url "http://repo.spring.io/milestone" }
-        maven { url "https://plugins.gradle.org/m2/" }
+        mavenCentral()
     }
     dependencies {
-        classpath("org.springframework.boot:spring-boot-gradle-plugin:1.5.3.RELEASE")
+        classpath("org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}")
+        classpath 'com.bmuschko:gradle-docker-plugin:3.3.2'
         classpath "org.ajoberstar:gradle-git:1.7.2"
     }
 }
@@ -35,7 +36,7 @@ repositories {
 group 'at.software-craftsmen'
 
 ext {
-    spockVersion = '1.1-groovy-2.4-rc-3'
+    spockVersion = '1.1-groovy-2.4'
     groovyVersion = '2.4.7'
     lombokVersion = '1.16.8'
     logbackVersion = '1.2.3'
@@ -95,6 +96,7 @@ dependencies {
 
     localIntegrationTestCompile sourceSets.sharedTest.output
     localIntegrationTestCompile("org.springframework.boot:spring-boot-starter-test")
+    localIntegrationTestCompile('org.springframework.boot:spring-boot')
     localIntegrationTestRuntime("com.h2database:h2:1.4.191")
 }
 
@@ -152,16 +154,13 @@ build.dependsOn localIntegrationTest
 publishing {
     publications {
         mavenBoot(MavenPublication) {
-            artifact(file("$buildDir/libs/$project.name-$project.version-${bootRepackage.classifier}.jar")) {
+            artifact(file("$buildDir/libs/$project.name-${project.version}.jar")) {
                 classifier 'exec'
             }
         }
     }
 }
 
-bootRepackage {
-    classifier = 'exec'
-}
 
 import org.apache.tools.ant.filters.ReplaceTokens
 
@@ -181,7 +180,7 @@ task buildDockerContext(type: Copy) {
     }
 
     with copySpec {
-        from bootRepackage
+        from bootJar
         into "app"
     }
 }
