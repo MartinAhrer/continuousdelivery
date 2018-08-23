@@ -1,0 +1,7 @@
+name: continuousdelivery
+description: A generated Helm Chart for docker-compose from Skippbox Kompose
+version: 0.0.1
+keywords:
+  - continuousdelivery
+sources:
+home:
