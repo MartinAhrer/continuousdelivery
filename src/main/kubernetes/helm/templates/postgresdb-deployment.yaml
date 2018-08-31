@@ -28,7 +28,7 @@ spec:
             secretKeyRef:
               name: {{ .Release.Name }}-datasource-secret
               key: username
-        image: continuousdelivery-postgresdb:1.0
+        image: softwarecraftsmen/continuousdelivery-postgresdb:1.0
         imagePullPolicy: IfNotPresent
         ports:
           - containerPort: 5432

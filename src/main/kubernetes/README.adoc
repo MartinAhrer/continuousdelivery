@@ -2,20 +2,32 @@
 
 == Kubernetes
 
-=== Minikube
+
+=== Context Configuration
+
+kubectl configuration
+export KUBECONFIG=$HOME/.kube/config:$HOME/.kube/docker01.software-craftsmen.at
+
+
+=== Connect to minikube
 
 minikube start --vm-driver=xhyve
 eval $(minikube docker-env)
-cd build/docker
+
+
+=== Build application
+export DOCKER_REGISTRY=softwarecraftsmen/
 export APP_TAG=1.0 #set proper version number
+cd build/docker
 docker-compose build
-minikube dashboard
 
+=== push to Docker Hub
 
-=== Helm
+docker login --username softwarecraftsman
+docker image tag continuousdelivery-app:1.0 softwarecraftsmen/continuousdelivery-app:1.0
+docker push softwarecraftsmen/continuousdelivery-app:1.0
+docker image tag continuousdelivery-postgresdb:1.0 softwarecraftsmen/continuousdelivery-postgresdb:1.0
 
-brew install kompose
-brew install kubernetes-helm
 
 === kubectl imperative
 
@@ -50,3 +62,16 @@ kubectl apply -f app-ingress.yaml
 
 echo "$(minikube ip) continuousdelivery.minikube" | sudo tee -a /etc/hosts
 open http://continuousdelivery.minikube
+
+
+== Helm
+
+=== Client Installation
+
+brew install kompose
+brew install kubernetes-helm
+
+=== Kubernetes Configuration
+
+helm init
+

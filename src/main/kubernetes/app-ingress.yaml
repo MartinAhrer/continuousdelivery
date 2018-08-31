@@ -7,7 +7,7 @@ metadata:
       nginx.ingress.kubernetes.io/rewrite-target: /
 spec:
   rules:
-  - host: continuousdelivery.minikube
+  - host: continuousdelivery.minikuWbe
     http:
       paths:
       - path: /

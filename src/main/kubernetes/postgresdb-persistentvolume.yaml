@@ -1,0 +1,14 @@
+kind: PersistentVolume
+apiVersion: v1
+metadata:
+  name: postgresdb-volume
+  labels:
+    type: local
+spec:
+  storageClassName: local
+  capacity:
+    storage: 1Gi
+  accessModes:
+  - ReadWriteOnce
+  hostPath:
+    path: "/var/volume/postgresdb"

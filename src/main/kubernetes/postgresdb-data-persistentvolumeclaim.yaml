@@ -5,6 +5,7 @@ metadata:
   labels:
     app: postgresdb-data
 spec:
+  storageClassName: local
   accessModes:
   - ReadWriteOnce
   resources:

@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
       - name: {{ .Release.Name }}-app
-        image: continuousdelivery-app:1.0
+        image: softwarecraftsmen/continuousdelivery-app:1.0
         imagePullPolicy: IfNotPresent
         ports:
         - containerPort: 8080
