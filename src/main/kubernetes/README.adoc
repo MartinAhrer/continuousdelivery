@@ -75,3 +75,35 @@ brew install kubernetes-helm
 
 helm init
 
+
+== How to create persistent volumes
+
+1. create the local-storage class
+
+----
+$ kubectl apply -f local-storageclass.yaml
+----
+
+2. create local persistent volumes (local-pv)
+
+----
+$ kubectl apply -f hostpath-pv.yml
+----
+
+NOTE: The above manifest is using /srv/pv01 and /srv/pv02. Please create those paths first on the dedicated node.
+
+NOTE: Dynamic provisioning is not supported in beta. All local PersistentVolumes must be statically created. PersistentVolumeSpec "local" isn't persisting any data from the container, therefore use "hostPath"
+
+3. create the persistent volume claims
+
+----
+$ kubectl apply -f postgresdb-data-persistentvolumeclaim.yaml
+$ kubectl apply -f postgresdb-persistentvolumeclaim.yaml
+----
+
+4. deploy the application
+
+----
+$ kubectl apply -f postgresdb-deployment.yaml 
+$ kubectl apply -f postgresdb-service.yaml 
+----
