@@ -1,11 +1,11 @@
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-  name: postgresdb
+  name: postgresdb-pvc
   labels:
     app: postgresdb
 spec:
-  storageClassName: local
+  storageClassName: local-storage
   accessModes:
   - ReadWriteOnce
   resources:
