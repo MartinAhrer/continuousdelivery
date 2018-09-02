@@ -43,8 +43,8 @@ spec:
       volumes:
       - name: postgresdb
         persistentVolumeClaim:
-          claimName: postgresdb
+          claimName: postgresdb-pvc
       - name: postgresdb-data
         persistentVolumeClaim:
-          claimName: postgresdb-data
+          claimName: postgresdb-data-pvc
 status: {}

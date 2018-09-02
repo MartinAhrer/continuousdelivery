@@ -1,0 +1,47 @@
+kind: List
+apiVersion: v1
+items:
+- apiVersion: v1
+  kind: PersistentVolume
+  metadata:
+    name: local-pv01
+  spec:
+    capacity:
+      storage: 50Gi
+    accessModes:
+    - ReadWriteOnce
+    persistentVolumeReclaimPolicy: Retain
+    storageClassName: local-storage
+    hostPath:
+      path: /srv/pv01
+    nodeAffinity:
+      required:
+        nodeSelectorTerms:
+        - matchExpressions:
+          - key: kubernetes.io/hostname
+            operator: In
+            values:
+            - dev03
+            - docker02
+- apiVersion: v1
+  kind: PersistentVolume
+  metadata:
+    name: local-pv02
+  spec:
+    capacity:
+      storage: 50Gi
+    accessModes:
+    - ReadWriteOnce
+    persistentVolumeReclaimPolicy: Retain
+    storageClassName: local-storage
+    hostPath:
+      path: /srv/pv02
+    nodeAffinity:
+      required:
+        nodeSelectorTerms:
+        - matchExpressions:
+          - key: kubernetes.io/hostname
+            operator: In
+            values:
+            - dev03
+            - docker02
