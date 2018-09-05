@@ -3,7 +3,7 @@ kind: PersistentVolumeClaim
 metadata:
   name: postgresdb-data
   labels:
-    app: postgresdb-data
+    app: postgresdb
 spec:
   storageClassName: local
   accessModes:

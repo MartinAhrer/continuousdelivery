@@ -35,15 +35,10 @@ spec:
         name: postgresdb
         resources: {}
         volumeMounts:
-        - mountPath: /var/lib/postgresql
-          name: postgresdb
         - mountPath: /var/lib/postgresql/data
           name: postgresdb-data
       restartPolicy: Always
       volumes:
-      - name: postgresdb
-        persistentVolumeClaim:
-          claimName: postgresdb
       - name: postgresdb-data
         persistentVolumeClaim:
           claimName: postgresdb-data

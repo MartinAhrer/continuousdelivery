@@ -8,8 +8,7 @@
 kubectl configuration
 export KUBECONFIG=$HOME/.kube/config:$HOME/.kube/docker01.software-craftsmen.at
 
-
-=== Connect to minikube
+=== Connect Docker client to minikube
 
 minikube start --vm-driver=xhyve
 eval $(minikube docker-env)
@@ -47,6 +46,8 @@ open http://localhost:8001/api/v1/namespaces/default/pods/$POD_NAME/proxy/api
 cd src/main/kubernetes
 
 kubectl apply -f datasource_secret.yaml
+kubectl apply -f local-storageclass.yaml
+kubectl apply -f postgresdb-persistentvolume.yaml
 kubectl apply -f postgresdb-data-persistentvolumeclaim.yaml
 kubectl apply -f postgresdb-persistentvolumeclaim.yaml
 kubectl apply -f postgresdb-deployment.yaml
