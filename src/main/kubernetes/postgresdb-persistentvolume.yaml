@@ -10,13 +10,6 @@ spec:
     storage: 1Gi
   accessModes:
   - ReadWriteOnce
-  local:
-    path: /var/volume/postgresdb
-  nodeAffinity:
-    required:
-      nodeSelectorTerms:
-      - matchExpressions:
-        - key: kubernetes.io/hostname
-          operator: In
-          values:
-          - docker01
+  hostPath:
+    path: "/var/volume/postgresdb"
+    type: DirectoryOrCreate
