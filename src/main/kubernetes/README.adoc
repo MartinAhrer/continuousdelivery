@@ -60,10 +60,6 @@ kubectl apply -f app-service.yaml
 kubectl apply -f app-ingress.yaml
 ----
 
-=== Configure ingress for Rancher
-
-TODO
-
 === Configure ingress for Minikube
 
 .Activate Nginx ingress
@@ -75,8 +71,8 @@ minikube addons enable ingress
 .Add hostname to `/etc/hosts`
 [source,bash]
 ----
-echo "$(minikube ip) continuousdelivery.minikube" | sudo tee -a /etc/hosts
-open http://continuousdelivery.minikube
+echo "$(minikube ip) continuousdelivery-demo.software-craftsmen.at" | sudo tee -a /etc/hosts
+open http://continuousdelivery-demo.software-craftsmen.at
 ----
 
 == Helm
