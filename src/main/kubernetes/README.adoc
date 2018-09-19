@@ -75,12 +75,39 @@ echo "$(minikube ip) continuousdelivery-demo.software-craftsmen.at" | sudo tee -
 open http://continuousdelivery-demo.software-craftsmen.at
 ----
 
-== Helm
+== GlusterFS Volume
 
-=== Client Installation
+Prerequisites:
+* GlusterFS server cluster
+* Create a GlusterFS volume
 
-brew install kompose
-brew install kubernetes-helm
+=== Create endpoints
+
+[source,bash]
+----
+kubectl create -f glusterfs-endpoints.yaml
+# check endpoints
+kubectl get endpoints
+----
+
+We also need to create a service for the glusterfs endpoints, so that they will persist.
+
+[source,bash]
+----
+kubectl create -f glusterfs-service.yaml
+----
+
+=== Create a testing pod
+
+[source,bash]
+----
+kubectl create -f nginx-gluster-mount-pod.yaml
+# check state
+kubectl get pods --namespace=demo
+# execute command mount inside container
+kubectl exec glusterfspod --namespace=demo  -- mount | grep gluster
+10.18.58.15:gv0 on /mnt/kubevol0 type fuse.glusterfs (rw,relatime,user_id=0,group_id=0,default_permissions,allow_other,max_read=131072)
+----
 
 === Kubernetes Configuration
 
