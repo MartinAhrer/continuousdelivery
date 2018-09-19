@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: glusterfs-cluster
+  namespace: demo
+spec:
+  ports:
+  - port: 1
+    protocol: TCP
+    targetPort: 1
+  sessionAffinity: None
+  type: ClusterIP
+status:
+  loadBalancer: {}
