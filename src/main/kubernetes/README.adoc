@@ -77,9 +77,10 @@ open http://continuousdelivery-demo.software-craftsmen.at
 
 == GlusterFS Volume
 
-Prerequisites:
+Requirements:
+
 * GlusterFS server cluster
-* Create a GlusterFS volume
+* A GlusterFS volume
 
 === Create endpoints
 
