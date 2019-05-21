@@ -63,5 +63,7 @@ postgresql:
         secretKeyRef:
           name: datasource-secret
           key: password
-  initdbScriptsConfigMap: continuousdelivery
+  postgresqlPassword: boot
+  postgresqlUsername: spring
+  postgresqlDatabase: app
 
