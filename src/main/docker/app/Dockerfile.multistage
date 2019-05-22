@@ -1,0 +1,21 @@
+# syntax = docker/dockerfile:1.0-experimental
+
+FROM openjdk:8-jdk-slim as builder
+
+WORKDIR /project
+COPY gradle/ ./gradle/
+COPY src/ ./src/
+COPY *.gradle ./
+COPY gradlew ./
+
+RUN --mount=type=cache,target=/root/.gradle ./gradlew assemble --no-daemon && \
+    ls -la build/libs && \
+    ls -al /root/.gradle
+
+FROM openjdk:8-jre-slim as product
+
+LABEL maintainer="Martin Ahrer <this@martinahrer.at>"
+RUN mkdir /opt/app
+EXPOSE 8080
+CMD java -jar /opt/app/continuousdelivery.jar
+COPY --from=builder /project/build/libs/continuousdelivery.jar /opt/app/continuousdelivery.jar

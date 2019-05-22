@@ -1,14 +1,10 @@
 buildscript {
-    ext {
-        springBootVersion = '2.1.1.RELEASE'
-    }
     repositories {
         mavenCentral()
     }
     dependencies {
-        classpath("org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}")
         classpath 'com.bmuschko:gradle-docker-plugin:3.3.2'
-        classpath "org.ajoberstar:gradle-git:1.7.2"
+        classpath 'org.ajoberstar:gradle-git:1.7.2'
     }
 }
 
@@ -17,29 +13,26 @@ plugins {
     id 'groovy'
     id 'idea'
     id 'maven-publish'
-    id "net.ltgt.apt" version "0.19"
-    id "net.ltgt.apt-idea" version "0.19"
-    id "org.asciidoctor.convert" version "1.5.2"
-    id 'org.unbroken-dome.test-sets' version '1.5.1'
+    id 'net.ltgt.apt' version '0.19'
+    id 'net.ltgt.apt-idea' version '0.19'
+    id 'org.asciidoctor.convert' version '1.5.2'
+    id 'org.unbroken-dome.test-sets' version '2.1.1'
     id 'com.jfrog.bintray' version '1.7'
+
+    id 'org.springframework.boot' version '2.1.4.RELEASE'
+    id 'io.spring.dependency-management' version '1.0.6.RELEASE'
 }
-
-apply plugin: "org.ajoberstar.grgit"
-apply plugin: "org.ajoberstar.release-opinion"
-
-apply plugin: 'org.springframework.boot'
-apply plugin: 'io.spring.dependency-management'
 
 repositories {
     mavenCentral()
 }
 
-group 'at.software-craftsmen'
+group 'at.martinahrer'
 
 ext {
     spockVersion = '1.2-groovy-2.4'
     groovyVersion = '2.4.16'
-    lombokVersion = '1.16.8'
+    lombokVersion = '1.18.6'
     logbackVersion = '1.2.3'
     snippetsDir = file('build/generated-snippets')
 }
@@ -47,16 +40,12 @@ ext {
 ext['spock.version'] = spockVersion
 
 testSets {
-    sharedTest
-    localIntegrationTest
-    integrationTest
-    docsTest { dirName = 'docs' }
-}
-
-
-sourceSets {
-    integrationTest {
-        compileClasspath += sourceSets.sharedTest.runtimeClasspath
+    libraries { sharedTest }
+    localIntegrationTest { imports libraries.sharedTest }
+    integrationTest { imports libraries.sharedTest }
+    docsTest {
+        dirName = 'docs'
+        imports libraries.sharedTest
     }
 }
 
@@ -85,6 +74,8 @@ dependencies {
     runtime ("ch.qos.logback:logback-classic:${logbackVersion}")
     runtime("org.slf4j:jcl-over-slf4j:1.7.25")
 
+    sharedTestCompile "org.codehaus.groovy:groovy-all:$groovyVersion"
+    
     testCompile "org.codehaus.groovy:groovy-all:$groovyVersion"
     testCompile("org.springframework:spring-test")
     testCompile "org.spockframework:spock-core:$spockVersion"
@@ -158,17 +149,13 @@ asciidoctor {
 build.dependsOn asciidoctor
 build.dependsOn localIntegrationTest
 
-
 publishing {
     publications {
-        mavenBoot(MavenPublication) {
-            artifact(file("$buildDir/libs/$project.name-${project.version}.jar")) {
-                classifier 'exec'
-            }
+        bootJava(MavenPublication) {
+            artifact bootJar
         }
     }
 }
-
 
 import org.apache.tools.ant.filters.ReplaceTokens
 
@@ -177,7 +164,7 @@ ext {
     dockerBuildDir = "$buildDir/docker"
 }
 
-task buildDockerContext(type: Copy) {
+task buildDockerfile(type: Copy) {
     group = "Docker"
     description = "Prepare for building the image (create the Dockerfile, collect image files, etc.)"
 
@@ -186,6 +173,13 @@ task buildDockerContext(type: Copy) {
     from(dockerSrcDir) {
         filter(ReplaceTokens, tokens: [version: project.version as String])
     }
+}
+
+task buildDockerContext(type: Copy, dependsOn: buildDockerfile) {
+    group = "Docker"
+    description = "Prepare for building the image (create the Dockerfile, collect image files, etc.)"
+
+    into dockerBuildDir
 
     with copySpec {
         from bootJar
@@ -197,7 +191,7 @@ bintray {
     user = project.hasProperty('bintrayUser') ? project.property('bintrayUser') : System.getenv('BINTRAY_USER')
     key = project.hasProperty('bintrayApiKey') ? project.property('bintrayApiKey') : System.getenv('BINTRAY_API_KEY')
 
-    publications = ['mavenBoot']
+    publications = ['bootJava']
 
     pkg {
         repo = 'continuousdelivery'

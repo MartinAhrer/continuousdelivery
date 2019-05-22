@@ -1,0 +1,10 @@
+== TODO
+
+https://github.com/opencontainers/image-spec/blob/master/annotations.md
+
+Multi Stage Build
+
+Google Docker build Gradle plugin
+
+docker run --rm --name img -v ${PWD}:/source --workdir /source --security-opt seccomp=unconfined --security-opt apparmor=unconfined r.j3ss.co/img build -f src/main/docker/app/Dockerfile.multistage -t continuousdelivery_img_built ./
+DOCKER_BUILDKIT=1 docker image build -f src/main/docker/app/Dockerfile.multistage -t continuousdelivery ./

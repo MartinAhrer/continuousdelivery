@@ -11,51 +11,51 @@ export COMPOSE_PROJECT_NAME=continuousdelivery
 
 == Build
 
-A build number is required for building all artifacts including the Docker image.
+A tag is required for building all artifacts including the Docker image.
 
 [source,bash]
 ----
-: ${BUILD_NUMBER:=latest}
-export BUILD_NUMBER
+: ${APP_TAG:=latest}
+export APP_TAG
 ----
 
 Build is running the following tasks
 
  * documentation tests,
- * build Spring JAR
+ * build Spring Boot JAR
  * build Docker context (Dockerfile, docker-compose scripts)
-
-All compose triggered tasks that execute Gradle tasks have to run with the project root directory as current directory.
-
-IMPORTANT: Run from project root.
 
 .Run tests and build the Docker context
 [source,bash]
 ----
-export COMPOSE_PROJECT_NAME=continuousdelivery
-export PROJECT_DIR=$PWD
-docker-compose -f src/main/docker/pipeline-build.yml run --rm build
+./gradlew buildDockerContext
+----
+
+.Gradle cache
+----
+docker volume create --name=dot_gradle
 ----
 
 .Build Application Image
 [source,bash]
 ----
-TODO
+export COMPOSE_PROJECT_NAME=continuousdelivery
+docker-compose build
 ----
 
 == Run integration test
 
-This will startup a _production-like_ environment and runs a suite of integration tests.
+This will startup a _production-like_ environment and run a suite of integration tests.
 
-IMPORTANT: Run from project root.
+IMPORTANT: Run this from project root (or set the `PROJECT_DIR` variable properly).
 
 [source,bash]
 ----
 export COMPOSE_PROJECT_NAME=continuousdelivery
-export BUILD_NUMBER=latest
-export PROJECT_DIR=$PWD
+export APP_TAG=latest
+export PROJECT_DIR=${PWD}
 # have to change to the directory containing the compose files, it also contains a .env file. TODO replace by values in the compose-file/exported variables
 cd build/docker
-docker-compose -f docker-compose.yml -f pipeline-integration-test.yml run --rm integration
+docker-compose -f docker-compose.yml -f pipeline-integration-test.yml run --rm integration-test
 docker-compose -f docker-compose.yml -f pipeline-integration-test.yml down -v
 ----

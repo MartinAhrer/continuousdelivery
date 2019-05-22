@@ -1,0 +1,11 @@
+.gradle/
+.idea/
+.shelf/
+build/
+classes/
+jenkins/
+jenkins-agent/
+out/
+*.iml
+*.ipr
+*.iws
