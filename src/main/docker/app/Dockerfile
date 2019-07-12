@@ -1,6 +1,6 @@
-FROM openjdk:8-jdk-slim
-MAINTAINER Martin Ahrer <this@martinahrer.at>
+FROM openjdk:8-jre-alpine
+LABEL maintainer='Martin Ahrer <this@martinahrer.at>'
 RUN mkdir /opt/app
 EXPOSE 8080
-CMD java -jar /opt/app/continuousdelivery.jar
-COPY continuousdelivery.jar /opt/app/continuousdelivery.jar
+CMD java -jar /opt/app/app.jar
+COPY continuousdelivery.jar /opt/app/app.jar

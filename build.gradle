@@ -3,7 +3,6 @@ buildscript {
         mavenCentral()
     }
     dependencies {
-        classpath 'com.bmuschko:gradle-docker-plugin:3.3.2'
         classpath 'org.ajoberstar:gradle-git:1.7.2'
     }
 }
@@ -21,13 +20,16 @@ plugins {
 
     id 'org.springframework.boot' version '2.1.4.RELEASE'
     id 'io.spring.dependency-management' version '1.0.6.RELEASE'
+
+    id 'com.google.cloud.tools.jib' version '1.2.0'
 }
 
 repositories {
     mavenCentral()
 }
 
-group 'at.martinahrer'
+group = 'at.martinahrer'
+project.version = '0.1'
 
 ext {
     spockVersion = '1.2-groovy-2.4'
@@ -197,7 +199,7 @@ bintray {
         repo = 'continuousdelivery'
         name = project.name
         licenses = ['Apache-2.0']
-        vcsUrl = 'https://github.com/SoftwareCraftsmen/continuousdelivery.git'
+        vcsUrl = 'https://github.com/MartinAhrer/continuousdelivery.git'
 
         version {
             name = project.version
@@ -208,5 +210,12 @@ bintray {
 task releaseVersion() {
     doLast {
         println project.version
+    }
+}
+
+
+jib {
+    to {
+        image = "martinahrer/continuousdelivery:jib-${project.version}"
     }
 }
