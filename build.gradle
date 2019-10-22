@@ -30,6 +30,9 @@ repositories {
 
 group = 'at.martinahrer'
 project.version = '0.1'
+bootJar {
+    archiveName = "$baseName.$extension"
+}
 
 ext {
     spockVersion = '1.2-groovy-2.4'
@@ -77,7 +80,7 @@ dependencies {
     runtime("org.slf4j:jcl-over-slf4j:1.7.25")
 
     sharedTestCompile "org.codehaus.groovy:groovy-all:$groovyVersion"
-    
+
     testCompile "org.codehaus.groovy:groovy-all:$groovyVersion"
     testCompile("org.springframework:spring-test")
     testCompile "org.spockframework:spock-core:$spockVersion"
