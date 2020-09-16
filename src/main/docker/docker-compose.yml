@@ -2,50 +2,45 @@ version: '2'
 
 services:
 
-  postgresdb:
-    build:
-      context: ./postgresdb
-    image: ${DOCKER_REGISTRY}continuousdelivery-postgresdb:${APP_TAG}
-    environment:
-      - POSTGRES_USER
-      - POSTGRES_PASSWORD
-      - SPRING_DATASOURCE_USERNAME
-      - SPRING_DATASOURCE_PASSWORD
-    volumes:
-      - postgresdb:/var/lib/postgresql
-      # This needs explicit mapping due to https://github.com/docker-library/postgres/blob/4e48e3228a30763913ece952c611e5e9b95c8759/Dockerfile.template#L52
-      - postgresdb_data:/var/lib/postgresql/data
-    restart: always
-    networks:
-      - app
+    postgresql:
+        image: bitnami/postgresql:11
+        environment:
+            - POSTGRESQL_USERNAME
+            - POSTGRESQL_PASSWORD
+            - POSTGRESQL_DATABASE
+        volumes:
+            - postgresql_data:/var/lib/postgresql/data
+        restart: always
+        networks:
+            - app
 
-  app:
-    build:
-      context: ./app
-    image: ${DOCKER_REGISTRY}continuousdelivery-app:${APP_TAG}
-    environment:
-      - SPRING_DATASOURCE_URL
-      - SPRING_DATASOURCE_USERNAME
-      - SPRING_DATASOURCE_PASSWORD
-      - SPRING_JPA_GENERATE_DDL
-      - LOGSTASH_SOCKET_ADDRESS
-    depends_on:
-      - postgresdb
-    restart: always
-    networks:
-      - app
-    #healthcheck:
-    #  test: ["CMD", "curl", "-f", "http://app:8080"]
-    #  interval: 30s
-    #  timeout: 5s
-    #  retries: 3
+    app:
+        build:
+            context: ./
+        image: ${DOCKER_REGISTRY}continuousdelivery:${APP_TAG}
+        environment:
+            - SPRING_DATASOURCE_URL
+            - SPRING_DATASOURCE_USERNAME
+            - SPRING_DATASOURCE_PASSWORD
+            - SPRING_JPA_GENERATE_DDL
+            - LOGSTASH_SOCKET_ADDRESS
+        depends_on:
+            - postgresql
+        restart: always
+        ports:
+            - ${APP_PORT}:8080
+        networks:
+            - app
+        #healthcheck:
+        #  test: ["CMD", "curl", "-f", "http://app:8080"]
+        #  interval: 30s
+        #  timeout: 5s
+        #  retries: 3
 
 volumes:
-  postgresdb:
-    driver: local
-  postgresdb_data:
-    driver: local
+    postgresql_data:
+        driver: local
 
 networks:
-  app:
-    driver: bridge
+    app:
+        driver: bridge

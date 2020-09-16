@@ -1,31 +1,30 @@
 stages:
-  - build
-  - deploy
+    - build
+    - deliver
 
 cache:
-  key: ${CI_JOB_NAME}
-  paths:
-  - /root/.gradle
+    key: ${CI_JOB_NAME}
+    paths:
+        - /root/.gradle
 
 build:
-  stage: build
-  image: adoptopenjdk:11-jdk-hotspot
-  script:
-    - ./gradlew --no-daemon buildDockerContext
-  artifacts:
-    paths:
-      - build/
-
+    stage: build
+    image: adoptopenjdk:11-jdk-hotspot
+    script:
+        - ./gradlew --no-daemon buildDockerContext
+    artifacts:
+        paths:
+            - build/
+# TODO pass branch/tag as project.version
 deliver:
-  stage: deploy
-  image:
-    name: gcr.io/kaniko-project/executor:debug
-    entrypoint: [""]
-  script:
-    - echo "{\"auths\":{\"$CI_REGISTRY\":{\"username\":\"$CI_REGISTRY_USER\",\"password\":\"$CI_REGISTRY_PASSWORD\"}}}" > /kaniko/.docker/config.json
-    - /kaniko/executor --context $CI_PROJECT_DIR/build/docker/app --dockerfile $CI_PROJECT_DIR/build/docker/app/Dockerfile --destination $CI_REGISTRY_IMAGE:$CI_COMMIT_TAG
-  only:
-    - tags
-  dependencies:
-    - build
-   
+    stage: deliver
+    image: adoptopenjdk:11-jdk-hotspot
+    script:
+        - ./gradlew --no-daemon publishBootJavaPublicationToGitLabRepository
+    artifacts:
+        paths:
+            - build/
+#    only:
+#        - tags
+    dependencies:
+        - build

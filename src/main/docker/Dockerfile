@@ -1,4 +1,4 @@
-FROM openjdk:8-jre-alpine
+FROM adoptopenjdk/openjdk11:alpine
 LABEL maintainer='Martin Ahrer <this@martinahrer.at>'
 RUN mkdir /opt/app
 EXPOSE 8080
