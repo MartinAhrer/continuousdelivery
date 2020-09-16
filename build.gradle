@@ -9,20 +9,22 @@ buildscript {
 
 plugins {
     id 'java'
+    id 'java-test-fixtures'
     id 'groovy'
     id 'idea'
     id 'maven-publish'
     id 'net.ltgt.apt' version '0.19'
     id 'net.ltgt.apt-idea' version '0.19'
     id 'org.asciidoctor.convert' version '1.5.2'
-    id 'org.unbroken-dome.test-sets' version '2.1.1'
+    id 'org.unbroken-dome.test-sets' version '2.2.1'
     id 'com.jfrog.bintray' version '1.7'
 
-    id 'org.springframework.boot' version '2.1.4.RELEASE'
-    id 'io.spring.dependency-management' version '1.0.6.RELEASE'
+    id 'org.springframework.boot' version '2.3.3.RELEASE'
 
-    id 'com.google.cloud.tools.jib' version '1.2.0'
+    id 'com.google.cloud.tools.jib' version '2.5.0'
 }
+
+apply plugin: "io.spring.dependency-management"
 
 repositories {
     mavenCentral()
@@ -30,9 +32,13 @@ repositories {
 
 group = 'at.martinahrer'
 project.version = '0.1'
+
 bootJar {
-    archiveName = "$baseName.$extension"
+    archiveFileName = "${archiveBaseName.get()}.${archiveExtension.get()}"
 }
+
+sourceCompatibility = JavaVersion.VERSION_11
+targetCompatibility = JavaVersion.VERSION_11
 
 ext {
     spockVersion = '1.2-groovy-2.4'
@@ -45,28 +51,44 @@ ext {
 ext['spock.version'] = spockVersion
 
 testSets {
-    libraries { sharedTest }
-    localIntegrationTest { imports libraries.sharedTest }
-    integrationTest { imports libraries.sharedTest }
+    localIntegrationTest
+    integrationTest
     docsTest {
         dirName = 'docs'
-        imports libraries.sharedTest
+    }
+}
+
+sourceSets {
+    testFixtures {
+        groovy {
+            srcDir 'src/sharedTest/groovy'
+        }
+    }
+}
+
+dependencyManagement {
+    imports {
+        mavenBom org.springframework.boot.gradle.plugin.SpringBootPlugin.BOM_COORDINATES
     }
 }
 
 dependencies {
-    apt "org.projectlombok:lombok:$lombokVersion"
+    annotationProcessor "org.projectlombok:lombok:${lombokVersion}"
+    annotationProcessor 'org.springframework.boot:spring-boot-configuration-processor'
 
-    compile("org.springframework.boot:spring-boot-starter")
+    implementation("org.springframework.boot:spring-boot-starter")
+    implementation("org.springframework.boot:spring-boot-starter-data-rest")
+    implementation("org.springframework.boot:spring-boot-starter-data-jpa")
+    implementation("org.springframework.boot:spring-boot-starter-hateoas")
+    implementation("org.springframework.boot:spring-boot-starter-actuator")
+    implementation('org.springframework.boot:spring-boot-starter-validation')
     runtime("org.springframework.boot:spring-boot-starter-logging")
-    compile("org.springframework.boot:spring-boot-starter-data-rest")
-    compile("org.springframework.boot:spring-boot-starter-data-jpa")
-    compile("org.springframework.boot:spring-boot-starter-hateoas")
 
     compile("org.hibernate.javax.persistence:hibernate-jpa-2.1-api:1.0.0.Final")
     compile("org.projectlombok:lombok:$lombokVersion")
 
     runtime('org.springframework.data:spring-data-rest-hal-browser')
+
     runtime("org.postgresql:postgresql:9.4-1200-jdbc41") {
         exclude group: "org.slf4j", module: "slf4j-simple"
     }
@@ -75,11 +97,11 @@ dependencies {
     runtime("net.logstash.logback:logstash-logback-encoder:4.9") {
         exclude group: "ch.qos.logback", module: "logback-core"
     }
-    runtime ("ch.qos.logback:logback-core:${logbackVersion}")
-    runtime ("ch.qos.logback:logback-classic:${logbackVersion}")
+    runtime("ch.qos.logback:logback-core:${logbackVersion}")
+    runtime("ch.qos.logback:logback-classic:${logbackVersion}")
     runtime("org.slf4j:jcl-over-slf4j:1.7.25")
 
-    sharedTestCompile "org.codehaus.groovy:groovy-all:$groovyVersion"
+    testFixturesImplementation "org.codehaus.groovy:groovy-all:$groovyVersion"
 
     testCompile "org.codehaus.groovy:groovy-all:$groovyVersion"
     testCompile("org.springframework:spring-test")
@@ -90,15 +112,15 @@ dependencies {
     docsTestCompile 'com.jayway.jsonpath:json-path'
     docsTestCompile 'org.hamcrest:hamcrest-library'
 
-    docsTestCompile sourceSets.sharedTest.output
+    docsTestCompile(testFixtures(project(":")))
     docsTestCompile("org.springframework.boot:spring-boot-starter-test")
     docsTestRuntime("com.h2database:h2:1.4.191")
 
-    integrationTestCompile sourceSets.sharedTest.output
+    integrationTestCompile(testFixtures(project(":")))
     integrationTestCompile("org.springframework.boot:spring-boot-starter-test")
     integrationTestRuntime("com.h2database:h2:1.4.191")
 
-    localIntegrationTestCompile sourceSets.sharedTest.output
+    localIntegrationTestCompile(testFixtures(project(":")))
     localIntegrationTestCompile("org.springframework.boot:spring-boot-starter-test")
     localIntegrationTestCompile('org.springframework.boot:spring-boot')
     localIntegrationTestRuntime("com.h2database:h2:1.4.191")
@@ -160,6 +182,19 @@ publishing {
             artifact bootJar
         }
     }
+    repositories {
+        maven {
+            url "https://gitlab.com/api/v4/projects/${System.getenv('CI_PROJECT_ID')}/packages/maven"
+            name "GitLab"
+            credentials(HttpHeaderCredentials) {
+                name = 'Job-Token'
+                value = System.getenv("CI_JOB_TOKEN")
+            }
+            authentication {
+                header(HttpHeaderAuthentication)
+            }
+        }
+    }
 }
 
 import org.apache.tools.ant.filters.ReplaceTokens
@@ -188,7 +223,6 @@ task buildDockerContext(type: Copy, dependsOn: buildDockerfile) {
 
     with copySpec {
         from bootJar
-        into "app"
     }
 }
 
@@ -216,9 +250,18 @@ task releaseVersion() {
     }
 }
 
-
+// Google Jib
 jib {
-    to {
-        image = "martinahrer/continuousdelivery:jib-${project.version}"
+    from {
+        image = 'adoptopenjdk:11-jre-hotspot'
     }
+    to {
+        image = "martinahrer/${project.name}:${project.version}-jib"
+    }
+}
+
+// Spring Boot Build Pack
+bootBuildImage {
+    imageName = "martinahrer/${project.name}:${project.version}"
+    verboseLogging = true
 }
