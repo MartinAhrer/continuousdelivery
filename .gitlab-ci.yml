@@ -1,30 +1,40 @@
-stages:
-    - build
-    - deliver
+include:
+    # Include some default job templates for various job types
+    - project: 'codebreeze-io/project-template/gitlab-gradle-template'
+      file: '.gitlab-micro-stageless-pipeline.yml'
+      ref: feature/modular-jobs
+    - project: 'codebreeze-io/project-template/gitlab-gradle-template'
+      file: '.gitlab-auto-tag-delivery-rules.yml'
+      ref: feature/modular-jobs
 
-cache:
-    key: ${CI_JOB_NAME}
-    paths:
-        - /root/.gradle
+variables:
+    DOCKER_DRIVER: overlay2
+    GRADLE_OPTS:
+        value: -Dorg.gradle.daemon=false -Dorg.gradle.caching=true -Dorg.gradle.project.reckon.enabled=true
+        description: "Common Gradle options"
+    DELIVER_JOB_GRADLE_TASK:
+        value: 'deliver'
+        description: 'Default Gradle task for the deliver job'
 
-build:
-    stage: build
-    image: adoptopenjdk:11-jdk-hotspot
+check:
+    variables:
+        POSTGRESQL_USERNAME: spring
+        POSTGRESQL_PASSWORD: boot
+        POSTGRESQL_DATABASE: app
+        SPRING_DATASOURCE_URL: jdbc:postgresql://postgresql/app
+        SPRING_DATASOURCE_USERNAME: spring
+        SPRING_DATASOURCE_PASSWORD: boot
+        SPRING_JPA_GENERATE_DDL: "true"
+    services:
+        - name: bitnami/postgresql:11
+          alias: postgresql
     script:
-        - ./gradlew --no-daemon buildDockerContext
+        - !reference [ .check-script,script ]
+        - !reference [ .create-version-dotenv, script ]
     artifacts:
-        paths:
-            - build/
-# TODO pass branch/tag as project.version
+        !reference [ .create-version-dotenv, artifacts ]
+
 deliver:
-    stage: deliver
-    image: adoptopenjdk:11-jdk-hotspot
-    script:
-        - ./gradlew --no-daemon publishBootJavaPublicationToGitLabRepository
-    artifacts:
-        paths:
-            - build/
-#    only:
-#        - tags
-    dependencies:
-        - build
+    services:
+        - docker:19-dind
+

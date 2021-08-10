@@ -1,49 +1,50 @@
 buildscript {
     repositories {
+        gradlePluginPortal()
         mavenCentral()
     }
     dependencies {
-        classpath 'org.ajoberstar:gradle-git:1.7.2'
+        classpath "org.ajoberstar.grgit:grgit-gradle:4.1.0"
     }
 }
 
 plugins {
+    id 'base'
     id 'java'
     id 'java-test-fixtures'
     id 'groovy'
     id 'idea'
     id 'maven-publish'
-    id 'net.ltgt.apt' version '0.19'
-    id 'net.ltgt.apt-idea' version '0.19'
-    id 'org.asciidoctor.convert' version '1.5.2'
-    id 'org.unbroken-dome.test-sets' version '2.2.1'
+    //id 'net.ltgt.apt' version '0.19'
+    //id 'net.ltgt.apt-idea' version '0.19'
+    //id 'org.asciidoctor.convert' version '2.4.0' // TODO docsTest is not creating asciidoc output
+    id 'org.unbroken-dome.test-sets' version '4.0.0'
     id 'com.jfrog.bintray' version '1.7'
-
-    id 'org.springframework.boot' version '2.3.3.RELEASE'
-
-    id 'com.google.cloud.tools.jib' version '2.5.0'
+    id 'org.springframework.boot' version '2.5.3'
+    id 'com.google.cloud.tools.jib' version '3.1.4'
+    id 'org.ajoberstar.reckon' version '0.13.0' apply false
 }
 
 apply plugin: "io.spring.dependency-management"
+apply from: "${rootDir}/gradle/version.gradle"
+apply from: "${rootDir}/gradle/docker/dockerfile.gradle"
+apply from: "${rootDir}/gradle/docker/spring-boot-gitlab.gradle"
+apply from: "${rootDir}/gradle/docker/jib.gradle"
 
 repositories {
     mavenCentral()
 }
 
 group = 'at.martinahrer'
-project.version = '0.1'
-
-bootJar {
-    archiveFileName = "${archiveBaseName.get()}.${archiveExtension.get()}"
-}
 
 sourceCompatibility = JavaVersion.VERSION_11
 targetCompatibility = JavaVersion.VERSION_11
 
 ext {
-    spockVersion = '1.2-groovy-2.4'
-    groovyVersion = '2.4.16'
-    lombokVersion = '1.18.6'
+    groovyMinorVersion = '3.0'
+    groovyVersion = "${groovyMinorVersion}.8"
+    spockVersion = "2.0-groovy-${groovyMinorVersion}"
+    lombokVersion = '1.18.20'
     logbackVersion = '1.2.3'
     snippetsDir = file('build/generated-snippets')
 }
@@ -66,64 +67,88 @@ sourceSets {
     }
 }
 
-dependencyManagement {
-    imports {
-        mavenBom org.springframework.boot.gradle.plugin.SpringBootPlugin.BOM_COORDINATES
-    }
-}
+// According to https://docs.spring.io/spring-boot/docs/current/gradle-plugin/reference/htmlsingle/#managing-dependencies.dependency-management-plugin
+// the Maven BOM is automatically imported
+//dependencyManagement {
+//    imports {
+//        mavenBom org.springframework.boot.gradle.plugin.SpringBootPlugin.BOM_COORDINATES
+//    }
+//}
 
 dependencies {
     annotationProcessor "org.projectlombok:lombok:${lombokVersion}"
     annotationProcessor 'org.springframework.boot:spring-boot-configuration-processor'
 
-    implementation("org.springframework.boot:spring-boot-starter")
-    implementation("org.springframework.boot:spring-boot-starter-data-rest")
-    implementation("org.springframework.boot:spring-boot-starter-data-jpa")
-    implementation("org.springframework.boot:spring-boot-starter-hateoas")
-    implementation("org.springframework.boot:spring-boot-starter-actuator")
+    implementation('org.springframework.boot:spring-boot-starter')
+    implementation('org.springframework.boot:spring-boot-starter-data-rest')
+    implementation('org.springframework.boot:spring-boot-starter-data-jpa')
+    implementation('org.springframework.boot:spring-boot-starter-hateoas')
+    implementation('org.springframework.boot:spring-boot-starter-actuator')
     implementation('org.springframework.boot:spring-boot-starter-validation')
-    runtime("org.springframework.boot:spring-boot-starter-logging")
+    runtimeOnly('org.springframework.boot:spring-boot-starter-logging')
 
-    compile("org.hibernate.javax.persistence:hibernate-jpa-2.1-api:1.0.0.Final")
-    compile("org.projectlombok:lombok:$lombokVersion")
+    compileOnly('org.hibernate.javax.persistence:hibernate-jpa-2.1-api:1.0.0.Final')
+    compileOnly("org.projectlombok:lombok:$lombokVersion")
 
-    runtime('org.springframework.data:spring-data-rest-hal-browser')
+    // TODO replace hal browser
+    runtimeOnly('org.springframework.data:spring-data-rest-hal-explorer')
 
-    runtime("org.postgresql:postgresql:9.4-1200-jdbc41") {
-        exclude group: "org.slf4j", module: "slf4j-simple"
+    runtimeOnly('org.postgresql:postgresql:9.4-1200-jdbc41') {
+        exclude group: 'org.slf4j', module: 'slf4j-simple'
     }
-    runtime("com.h2database:h2:1.4.191")
+    runtimeOnly('com.h2database:h2:1.4.191')
 
-    runtime("net.logstash.logback:logstash-logback-encoder:4.9") {
-        exclude group: "ch.qos.logback", module: "logback-core"
+    runtimeOnly('net.logstash.logback:logstash-logback-encoder:4.9') {
+        exclude group: 'ch.qos.logback', module: "logback-core"
     }
-    runtime("ch.qos.logback:logback-core:${logbackVersion}")
-    runtime("ch.qos.logback:logback-classic:${logbackVersion}")
-    runtime("org.slf4j:jcl-over-slf4j:1.7.25")
+    runtimeOnly("ch.qos.logback:logback-core:${logbackVersion}")
+    runtimeOnly("ch.qos.logback:logback-classic:${logbackVersion}")
+    runtimeOnly('org.slf4j:jcl-over-slf4j:1.7.25')
 
-    testFixturesImplementation "org.codehaus.groovy:groovy-all:$groovyVersion"
+    testFixturesImplementation "org.codehaus.groovy:groovy:$groovyVersion"
+    testFixturesImplementation "org.codehaus.groovy:groovy-json:$groovyVersion"
 
-    testCompile "org.codehaus.groovy:groovy-all:$groovyVersion"
-    testCompile("org.springframework:spring-test")
-    testCompile "org.spockframework:spock-core:$spockVersion"
-    testCompile "org.spockframework:spock-spring:$spockVersion"
+    testImplementation('org.springframework:spring-test')
+    testImplementation "org.spockframework:spock-spring:$spockVersion"
+    addSpockDependencies(it, 'test')
 
-    docsTestCompile 'org.springframework.restdocs:spring-restdocs-mockmvc:2.0.2.RELEASE'
-    docsTestCompile 'com.jayway.jsonpath:json-path'
-    docsTestCompile 'org.hamcrest:hamcrest-library'
+    docsTestImplementation 'org.junit.jupiter:junit-jupiter'
+    docsTestImplementation 'org.junit.vintage:junit-vintage-engine'
+    docsTestImplementation 'org.springframework.restdocs:spring-restdocs-mockmvc:2.0.2.RELEASE'
+    docsTestImplementation 'com.jayway.jsonpath:json-path'
+    docsTestImplementation 'org.hamcrest:hamcrest-library'
 
-    docsTestCompile(testFixtures(project(":")))
-    docsTestCompile("org.springframework.boot:spring-boot-starter-test")
-    docsTestRuntime("com.h2database:h2:1.4.191")
+    docsTestImplementation('org.springframework.boot:spring-boot-starter-test')
+    docsTestRuntimeOnly('com.h2database:h2:1.4.191')
+    docsTestImplementation(testFixtures(project(":")))
 
-    integrationTestCompile(testFixtures(project(":")))
-    integrationTestCompile("org.springframework.boot:spring-boot-starter-test")
-    integrationTestRuntime("com.h2database:h2:1.4.191")
+    integrationTestImplementation "org.codehaus.groovy:groovy-json:$groovyVersion"
+    integrationTestImplementation('org.springframework.boot:spring-boot-starter-test')
+    integrationTestRuntimeOnly('com.h2database:h2:1.4.191')
+    integrationTestImplementation(testFixtures(project(":")))
 
-    localIntegrationTestCompile(testFixtures(project(":")))
-    localIntegrationTestCompile("org.springframework.boot:spring-boot-starter-test")
-    localIntegrationTestCompile('org.springframework.boot:spring-boot')
-    localIntegrationTestRuntime("com.h2database:h2:1.4.191")
+
+    addSpockDependencies(it, 'localIntegrationTest')
+    localIntegrationTestImplementation "org.spockframework:spock-spring:$spockVersion"
+    localIntegrationTestImplementation "org.codehaus.groovy:groovy-json:$groovyVersion"
+    localIntegrationTestImplementation('org.springframework.boot:spring-boot-starter-test')
+    localIntegrationTestImplementation('org.springframework.boot:spring-boot')
+    localIntegrationTestRuntimeOnly('com.h2database:h2:1.4.191')
+    localIntegrationTestImplementation(testFixtures(project(":")))
+}
+
+
+configurations
+        .findAll { (it.name == 'testImplementation' || it.name == 'testFixturesImplementation' || it.name.endsWith('TestImplementation')) }
+        .each {
+            project.dependencies.add(it.name, project.dependencies.platform("org.spockframework:spock-bom:${spockVersion}"))
+        }
+
+def addSpockDependencies (DependencyHandler dependencies, String testType) {
+    dependencies.add("${testType}Implementation", "org.codehaus.groovy:groovy:${groovyVersion}")
+    dependencies.add("${testType}Implementation", "org.spockframework:spock-core")
+    dependencies.add("${testType}RuntimeOnly", "net.bytebuddy:byte-buddy:1.11.0") // allows mocking of classes (in addition to interfaces)
+    dependencies.add("${testType}RuntimeOnly", "org.objenesis:objenesis:3.2") // allows mocking of classes without default constructor (together with ByteBuddy or CGLIB)
 }
 
 configurations.all {
@@ -139,11 +164,18 @@ test {
     outputs.dir snippetsDir
 }
 
-asciidoctor {
-    attributes 'snippets': snippetsDir
-    inputs.dir snippetsDir
-    dependsOn docsTest
+tasks.withType(Test) {
+    useJUnitPlatform()
+    testLogging {
+        events 'passed', 'skipped', 'failed'
+    }
 }
+
+//asciidoctor {
+//    attributes 'snippets': snippetsDir
+//    inputs.dir snippetsDir
+//    dependsOn docsTest
+//}
 
 // check: is it still required with ltgt
 //idea {
@@ -173,57 +205,13 @@ asciidoctor {
 //    }
 //}
 
-build.dependsOn asciidoctor
-build.dependsOn localIntegrationTest
-
-publishing {
-    publications {
-        bootJava(MavenPublication) {
-            artifact bootJar
-        }
-    }
-    repositories {
-        maven {
-            url "https://gitlab.com/api/v4/projects/${System.getenv('CI_PROJECT_ID')}/packages/maven"
-            name "GitLab"
-            credentials(HttpHeaderCredentials) {
-                name = 'Job-Token'
-                value = System.getenv("CI_JOB_TOKEN")
-            }
-            authentication {
-                header(HttpHeaderAuthentication)
-            }
-        }
-    }
+tasks.named('build').configure {
+    //dependsOn tasks.named('asciidoctor') // TODO does not work currently
 }
 
-import org.apache.tools.ant.filters.ReplaceTokens
-
-ext {
-    dockerSrcDir = "$projectDir/src/main/docker"
-    dockerBuildDir = "$buildDir/docker"
-}
-
-task buildDockerfile(type: Copy) {
-    group = "Docker"
-    description = "Prepare for building the image (create the Dockerfile, collect image files, etc.)"
-
-    into dockerBuildDir
-
-    from(dockerSrcDir) {
-        filter(ReplaceTokens, tokens: [version: project.version as String])
-    }
-}
-
-task buildDockerContext(type: Copy, dependsOn: buildDockerfile) {
-    group = "Docker"
-    description = "Prepare for building the image (create the Dockerfile, collect image files, etc.)"
-
-    into dockerBuildDir
-
-    with copySpec {
-        from bootJar
-    }
+tasks.named('check').configure {
+    dependsOn tasks.named('localIntegrationTest')
+    dependsOn tasks.named('docsTest')
 }
 
 bintray {
@@ -244,24 +232,11 @@ bintray {
     }
 }
 
-task releaseVersion() {
-    doLast {
-        println project.version
-    }
+
+bootJar {
+    archiveFileName = "${archiveBaseName.get()}.${archiveExtension.get()}"
 }
 
-// Google Jib
-jib {
-    from {
-        image = 'adoptopenjdk:11-jre-hotspot'
-    }
-    to {
-        image = "martinahrer/${project.name}:${project.version}-jib"
-    }
-}
 
-// Spring Boot Build Pack
-bootBuildImage {
-    imageName = "martinahrer/${project.name}:${project.version}"
-    verboseLogging = true
-}
+
+apply from: "${rootDir}/gradle/publishing.gradle"

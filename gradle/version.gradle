@@ -1,0 +1,27 @@
+// still it is required to load the plugin in the plugins closure
+// e.g.: id 'org.ajoberstar.reckon' version '0.13.0' apply false
+
+if (System.getenv('CI_COMMIT_TAG') != null) {
+    // when running a tagged pipeline then infer the project version from the tag
+    project.allprojects {
+        version = System.getenv('CI_COMMIT_TAG')
+    }
+} else if (findProperty('reckon.enabled') == 'true') {
+    apply plugin: 'org.ajoberstar.reckon'
+    apply plugin: "org.ajoberstar.grgit"
+
+    reckon {
+        scopeFromProp()
+        snapshotFromProp()
+    }
+
+    tasks.named('reckonTagCreate').configure {
+        dependsOn tasks.named('check')
+    }
+}
+
+tasks.create('printVersion').doFirst {
+    group = 'Pipeline facade'
+    description 'Print the current project version'
+    println project.version
+}

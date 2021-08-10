@@ -1,0 +1,35 @@
+.release-template:
+  stage:
+    release
+  image: adoptopenjdk:11-jdk-hotspot
+  dependencies:
+    - deliver
+  script:
+    - |
+      ./gradlew reckonTagPush -Preckon.scope=$scope -Preckon.stage=$stage \
+        -Dorg.ajoberstar.grgit.auth.username=${CI_DEPLOY_USER} \
+        -Dorg.ajoberstar.grgit.auth.password=${CI_DEPLOY_PASSWORD}
+    artifacts:
+      paths:
+        - build/
+  #only:
+  #  - master
+  when: manual #ONLY MANUAL RELEASES, ONLY FROM MASTER
+
+release-major:
+  extends: .release-template
+  variables:
+    scope: major
+    stage: final
+
+release-minor:
+  extends: .release-template
+  variables:
+    scope: minor
+    stage: final
+
+release-patch:
+  extends: .release-template
+  variables:
+    scope: patch
+    stage: final

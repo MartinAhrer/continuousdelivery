@@ -1,0 +1,23 @@
+// Google Jib
+// Build image using the jibDockerBuild task
+jib {
+    def containerImageNamePrefix =  System.getenv('CI_REGISTRY_IMAGE') ?: "${project.name}"
+
+    String containerImageVersion = project.version
+    if (System.getenv('CI_COMMIT_TAG') !=null) {
+        containerImageVersion = System.getenv('CI_COMMIT_TAG')
+    } else if (System.getenv('CI_COMMIT_REF_SLUG') !=null) {
+        containerImageVersion = System.getenv('CI_COMMIT_REF_SLUG')
+    }
+
+    from {
+        image = System.getenv('JIB_FROM_IMAGE') ?: 'adoptopenjdk/openjdk11:alpine-jre'
+    }
+    to {
+        image = "${containerImageNamePrefix}:${containerImageVersion}"
+        auth {
+            username = System.getenv('CI_REGISTRY_USER')
+            password = System.getenv('CI_REGISTRY_PASSWORD')
+        }
+    }
+}

@@ -6,7 +6,7 @@ version: '2'
 
 services:
   stage-base:
-    image: openjdk:8-jdk
+    image: adoptopenjdk/openjdk11:alpine-jdk
     environment:
       - GRADLE_OPTS
       - APP_TAG

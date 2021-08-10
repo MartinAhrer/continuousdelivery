@@ -1,0 +1,42 @@
+apply plugin: 'maven-publish'
+
+publishing {
+    publications {
+        bootJava(MavenPublication) {
+            artifact bootJar
+        }
+    }
+    repositories {
+        maven {
+            url "https://gitlab.com/api/v4/projects/${System.getenv('CI_PROJECT_ID')}/packages/maven"
+            name "GitLab"
+            credentials(HttpHeaderCredentials) {
+                name = 'Job-Token'
+                value = System.getenv("CI_JOB_TOKEN")
+            }
+            authentication {
+                header(HttpHeaderAuthentication)
+            }
+        }
+    }
+}
+
+tasks.named('jar') {
+    manifest {
+        attributes(
+                'Implementation-Title': project.name,
+                'Implementation-Version': project.version)
+    }
+}
+
+tasks.register('deliver') {
+    group = 'Pipeline facade'
+    description 'Run all tasks for publishing (delivering) all produced artifacts'
+    dependsOn tasks.named('publishAllPublicationsToGitLabRepository')
+}
+
+project.plugins.withId('org.springframework.boot') {
+    tasks.named('deliver').configure {
+        dependsOn tasks.named('bootBuildImage')
+    }
+}

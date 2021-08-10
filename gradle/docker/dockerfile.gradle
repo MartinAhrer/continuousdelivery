@@ -1,0 +1,32 @@
+// Demonstrate usage of plain Docker tooling
+// Handcrafted Dockerfile
+// Docker CLI usage
+
+import org.apache.tools.ant.filters.ReplaceTokens
+
+ext {
+    dockerSrcDir = "$projectDir/src/main/docker"
+    dockerBuildDir = "$buildDir/docker"
+}
+
+task buildDockerfile(type: Copy) {
+    group = "Docker"
+    description = "Prepare for building the image (create the Dockerfile, collect image files, etc.)"
+
+    into dockerBuildDir
+
+    from(dockerSrcDir) {
+        filter(ReplaceTokens, tokens: [version: project.version as String])
+    }
+}
+
+task buildDockerContext(type: Copy, dependsOn: buildDockerfile) {
+    group = "Docker"
+    description = "Prepare for building the image (create the Dockerfile, collect image files, etc.)"
+
+    into dockerBuildDir
+
+    with copySpec {
+        from bootJar
+    }
+}

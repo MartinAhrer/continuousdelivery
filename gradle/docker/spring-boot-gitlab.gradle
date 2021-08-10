@@ -1,0 +1,26 @@
+// Spring Boot Build Pack
+// Build image using the bootBuildImage task
+bootBuildImage {
+    def containerImageNamePrefix =  System.getenv('CI_REGISTRY_IMAGE') ?: "${project.name}"
+
+    String containerImageVersion = project.version
+    if (System.getenv('CI_COMMIT_TAG') !=null) {
+        containerImageVersion = System.getenv('CI_COMMIT_TAG')
+    } else if (System.getenv('CI_COMMIT_REF_SLUG') !=null) {
+        containerImageVersion = System.getenv('CI_COMMIT_REF_SLUG')
+    }
+
+    imageName = "${containerImageNamePrefix}:${containerImageVersion}"
+    verboseLogging = true
+    if (System.getenv('CI_REGISTRY_IMAGE')) {
+        publish = true
+        docker {
+            host = System.getenv('DOCKER_PORT')
+            publishRegistry {
+                url = System.getenv('CI_REGISTRY')
+                username = System.getenv('CI_REGISTRY_USER')
+                password = System.getenv('CI_REGISTRY_PASSWORD')
+            }
+        }
+    }
+}
