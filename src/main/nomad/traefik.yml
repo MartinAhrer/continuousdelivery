@@ -1,0 +1,23 @@
+providers:
+    consulCatalog: # https://doc.traefik.io/traefik/providers/consul-catalog/#traefik-consul-catalog
+        exposedByDefault: false # services need a traefik.enable=true tag
+        endpoint:
+            address: {{ env "CONSUL_SOCKET_ADDRESS" }}
+        prefix: traefik # the default
+        constraints: "Tag(`traefik.tags=service`)"
+
+api:
+    dashboard: true
+    insecure: true # TODO Will it be available through https ?
+
+ping:
+    entryPoint: "traefik"
+
+entryPoints:
+    http:
+        address: ":8080"
+    traefik:
+        address: ":8081"
+
+log:
+    level: DEBUG

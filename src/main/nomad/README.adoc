@@ -1,0 +1,28 @@
+= README
+
+
+== Runtime infrastructure
+
+== Consul + Nomad
+
+=== Local development instances
+
+Run consul and nomad service from repository (TODO).
+Run as many Nomad clients as required.
+However, when running multiple clients you will not be able to deploy traefik to all client nodes as the traefik job configuration tries to do a static port binding.
+
+=== Remote development instances (cluster)
+
+TODO
+
+== Deploy traefik
+
+----
+docker container run --rm -ti -v ${PWD}:/levant --workdir /levant -e NOMAD_ADDR=http://192.168.1.18:4646 hashicorp/levant:0.3.0 levant deploy traefik.hcl
+----
+
+== Deploy application
+
+----
+docker container run --rm -ti -v ${PWD}:/levant --workdir /levant -e NOMAD_ADDR=http://192.168.1.18:4646 hashicorp/levant:0.3.0 levant deploy -var-file levant.yml -var-file credentials.yml continuousdelivery.hcl
+----

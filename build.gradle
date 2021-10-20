@@ -20,7 +20,7 @@ plugins {
     //id 'org.asciidoctor.convert' version '2.4.0' // TODO docsTest is not creating asciidoc output
     id 'org.unbroken-dome.test-sets' version '4.0.0'
     id 'com.jfrog.bintray' version '1.7'
-    id 'org.springframework.boot' version '2.6.4'
+    id 'org.springframework.boot' version '2.7.1'
     id 'com.google.cloud.tools.jib' version '3.1.4'
     id 'org.ajoberstar.reckon' version '0.13.1' apply false
 }
@@ -148,7 +148,7 @@ configurations
 def addSpockDependencies (DependencyHandler dependencies, String testType) {
     dependencies.add("${testType}Implementation", "org.codehaus.groovy:groovy:${groovyVersion}")
     dependencies.add("${testType}Implementation", "org.spockframework:spock-core")
-    dependencies.add("${testType}RuntimeOnly", "net.bytebuddy:byte-buddy:1.11.0") // allows mocking of classes (in addition to interfaces)
+    dependencies.add("${testType}RuntimeOnly", "net.bytebuddy:byte-buddy:1.12.+") // allows mocking of classes (in addition to interfaces)
     dependencies.add("${testType}RuntimeOnly", "org.objenesis:objenesis:3.2") // allows mocking of classes without default constructor (together with ByteBuddy or CGLIB)
 }
 
