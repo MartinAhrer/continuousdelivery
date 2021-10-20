@@ -14,10 +14,12 @@ jib {
         image = System.getenv('JIB_FROM_IMAGE') ?: 'adoptopenjdk/openjdk11:alpine-jre'
     }
     to {
-        image = "${containerImageNamePrefix}:${containerImageVersion}"
-        auth {
-            username = System.getenv('CI_REGISTRY_USER')
-            password = System.getenv('CI_REGISTRY_PASSWORD')
+        image = "${containerImageNamePrefix}:${containerImageVersion ?: "latest"}"
+        if (System.getenv('CI_REGISTRY_IMAGE')) {
+            auth {
+                username = System.getenv('CI_REGISTRY_USER')
+                password = System.getenv('CI_REGISTRY_PASSWORD')
+            }
         }
     }
 }

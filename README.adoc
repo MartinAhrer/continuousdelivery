@@ -1,8 +1,8 @@
-# Continuous Delivery Demo
+= Continuous Delivery Demo
 
 INFO: This is work in progress. We will add features for demoing various aspects of CD.
 
-## TODO
+== TODO
 
 * Add unit test
 * Add Sonar (metrics)
@@ -10,6 +10,23 @@ INFO: This is work in progress. We will add features for demoing various aspects
 * Add artifactory, bintray
 * Add flyway data migration
 
-## Build
+== Build
+
+=== Docker
 
 See src/main/docker/README.adoc
+
+=== Jib
+
+==== Build ARM64v8 image
+
+Building a ARM64v8 image requires to manually trigger the pipeline and configure the task to be executed.
+First a `arm64v8` base image is required.
+This is configured using the `jib.from.image` property.
+The built image needs a tag indicating that this is an image targeting the `arm64v8` platform. This is configured using the `jib.to.image` property.
+
+.`DELIVER_JOB_GRADLE_TASK` variable value
+[source,shell script]
+----
+jib -Djib.from.image=arm64v8/openjdk:11-jre-slim -Djib.to.image="$CI_REGISTRY_IMAGE:arm64v8"
+----
