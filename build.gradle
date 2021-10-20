@@ -20,7 +20,7 @@ plugins {
     //id 'org.asciidoctor.convert' version '2.4.0' // TODO docsTest is not creating asciidoc output
     id 'org.unbroken-dome.test-sets' version '4.0.0'
     id 'com.jfrog.bintray' version '1.7'
-    id 'org.springframework.boot' version '2.5.3'
+    id 'org.springframework.boot' version '2.5.5'
     id 'com.google.cloud.tools.jib' version '3.1.4'
     id 'org.ajoberstar.reckon' version '0.13.0' apply false
 }
@@ -81,6 +81,7 @@ dependencies {
 
     implementation('org.springframework.boot:spring-boot-starter')
     implementation('org.springframework.boot:spring-boot-starter-data-rest')
+    implementation('org.springframework.data:spring-data-rest-webmvc')
     implementation('org.springframework.boot:spring-boot-starter-data-jpa')
     implementation('org.springframework.boot:spring-boot-starter-hateoas')
     implementation('org.springframework.boot:spring-boot-starter-actuator')

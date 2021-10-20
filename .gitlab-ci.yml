@@ -4,7 +4,10 @@ include:
       file: '.gitlab-micro-stageless-pipeline.yml'
       ref: feature/modular-jobs
     - project: 'codebreeze-io/project-template/gitlab-gradle-template'
-      file: '.gitlab-auto-tag-delivery-rules.yml'
+      file: 'workflow/.gitlab-auto-tag-delivery-workflow.yml'
+      ref: feature/modular-jobs
+    - project: 'codebreeze-io/project-template/gitlab-gradle-template'
+      file: 'workflow/.gitlab-mergerequest-then-branch-or-tag-workflow.yml'
       ref: feature/modular-jobs
 
 variables:
@@ -37,4 +40,3 @@ check:
 deliver:
     services:
         - docker:19-dind
-
