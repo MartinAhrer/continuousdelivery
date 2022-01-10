@@ -20,9 +20,9 @@ plugins {
     //id 'org.asciidoctor.convert' version '2.4.0' // TODO docsTest is not creating asciidoc output
     id 'org.unbroken-dome.test-sets' version '4.0.0'
     id 'com.jfrog.bintray' version '1.7'
-    id 'org.springframework.boot' version '2.5.5'
+    id 'org.springframework.boot' version '2.6.4'
     id 'com.google.cloud.tools.jib' version '3.1.4'
-    id 'org.ajoberstar.reckon' version '0.13.0' apply false
+    id 'org.ajoberstar.reckon' version '0.13.1' apply false
 }
 
 apply plugin: "io.spring.dependency-management"
@@ -37,8 +37,8 @@ repositories {
 
 group = 'at.martinahrer'
 
-sourceCompatibility = JavaVersion.VERSION_11
-targetCompatibility = JavaVersion.VERSION_11
+sourceCompatibility = JavaVersion.VERSION_17
+targetCompatibility = JavaVersion.VERSION_17
 
 ext {
     groovyMinorVersion = '3.0'

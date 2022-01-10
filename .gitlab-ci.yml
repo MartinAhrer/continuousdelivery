@@ -1,23 +1,21 @@
+variables:
+  DOCKER_DRIVER: overlay2
+  GRADLE_OPTS:
+    value: -Dorg.gradle.daemon=false -Dorg.gradle.caching=true -Dorg.gradle.project.reckon.enabled=true
+    description: "Common Gradle options"
+  DEFAULT_JOB_IMAGE_NAME:
+    value: eclipse-temurin:17-jdk-alpine
+
 include:
     # Include some default job templates for various job types
-    - project: 'codebreeze-io/project-template/gitlab-gradle-template'
-      file: '.gitlab-micro-stageless-pipeline.yml'
-      ref: feature/modular-jobs
-    - project: 'codebreeze-io/project-template/gitlab-gradle-template'
-      file: 'workflow/.gitlab-auto-tag-delivery-workflow.yml'
-      ref: feature/modular-jobs
-    - project: 'codebreeze-io/project-template/gitlab-gradle-template'
-      file: 'workflow/.gitlab-mergerequest-then-branch-or-tag-workflow.yml'
-      ref: feature/modular-jobs
-
-variables:
-    DOCKER_DRIVER: overlay2
-    GRADLE_OPTS:
-        value: -Dorg.gradle.daemon=false -Dorg.gradle.caching=true -Dorg.gradle.project.reckon.enabled=true
-        description: "Common Gradle options"
-    DELIVER_JOB_GRADLE_TASK:
-        value: 'deliver'
-        description: 'Default Gradle task for the deliver job'
+    - project: 'codebreeze-io/project-template/gitlab-template'
+      ref: '0.4'
+      file:
+        - 'gradle/micro-stageless-pipeline.gitlab-ci.yml'
+        - 'rule/deliver-job-auto-tag-rule.gitlab-ci.yml'
+        - 'workflow/mergerequest-then-branch-or-tag-workflow.gitlab-ci.yml'
+        # Add the release feature for this pipeline
+        - 'release/release-micro-stageless-pipeline.gitlab-ci.yml'
 
 check:
     variables:
@@ -31,11 +29,6 @@ check:
     services:
         - name: bitnami/postgresql:11
           alias: postgresql
-    script:
-        - !reference [ .check-script,script ]
-        - !reference [ .create-version-dotenv, script ]
-    artifacts:
-        !reference [ .create-version-dotenv, artifacts ]
 
 deliver:
     services:

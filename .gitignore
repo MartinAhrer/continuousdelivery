@@ -67,4 +67,4 @@ build/
 .shelf
 workspace/
 jenkins-agent/
-.gradle_home
+.gradle-home/
