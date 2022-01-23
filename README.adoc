@@ -1,3 +1,5 @@
+:toc: left
+
 = Continuous Delivery Demo
 
 INFO: This is work in progress. We will add features for demoing various aspects of CD.
@@ -30,3 +32,30 @@ Build wiht overridden variable `DELIVER_JOB_GRADLE_TASK_ARGS` value
 ----
 jib -Djib.from.image=arm64v8/openjdk:11-jre-slim -Djib.to.image="$CI_REGISTRY_IMAGE:arm64v8"
 ----
+
+== Dependency Management
+
+=== Dependency vulnerability checking
+
+Export a project dependency report using the https://plugins.gradle.org/plugin/org.cyclonedx.bom[cyclonedx] Gradle plugin.
+
+[source,bash]
+----
+./gradlew cyclonedxBom
+----
+
+Start the https://docs.dependencytrack.org/[dependencytrack] server following their https://docs.dependencytrack.org/getting-started/deploy-docker/[documentation].
+And then send the exported dependencies to the dependencytrack web API
+
+
+[source,bash]
+----
+curl -vv -X "POST" "http://localhost:8081/api/v1/bom" \
+    -H 'Content-Type: multipart/form-data' \
+    -H "X-Api-Key: egmBk6wqlfi3yT7vh88RCbfgo89pveyT" \ # <.>
+    -F "autoCreate=true" \
+    -F "projectName=continuousdelivery" \
+    -F "projectVersion=0.1" \
+    -F "bom=@build/reports/bom.json"
+----
+<.> Get API key from dependencytrack's web user interface (e.g. Team Administrators)
