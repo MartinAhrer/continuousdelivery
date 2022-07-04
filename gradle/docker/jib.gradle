@@ -10,6 +10,9 @@ jib {
         containerImageVersion = System.getenv('CI_COMMIT_REF_SLUG')
     }
 
+    container {
+        creationTime = 'USE_CURRENT_TIMESTAMP'
+    }
     from {
         image = System.getenv('JIB_FROM_IMAGE') ?: 'adoptopenjdk/openjdk11:alpine-jre'
     }
