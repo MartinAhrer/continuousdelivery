@@ -1,13 +1,52 @@
+variable "api_image_tag" {
+    type = string
+}
+
+variable "registry_auth_username" {
+    type = string
+}
+
+variable "registry_auth_password" {
+    type = string
+}
+
 job "continuousdelivery" {
     datacenters = ["dc1"]
     type = "service"
 
-    spread {
-        attribute = "${node.datacenter}"
+    group "db" {
+        count = 1
+        network {
+            port "postgresdb" {
+                to = "5432"
+            }
+        }
+
+        task "db" {
+            driver = "docker"
+            config {
+                image = "bitnami/postgresql:11"
+                ports = [ "postgresdb" ]
+            }
+            env {
+                POSTGRESQL_DATABASE="app"
+                POSTGRESQL_USERNAME="spring"
+                POSTGRESQL_PASSWORD="boot"
+            }
+            service {
+                name = "continuousdelivery-db"
+                provider = "nomad"
+                port = "postgresdb"
+                tags = [ "db" ]
+            }
+        }
     }
 
-    group "continuousdelivery-api" {
+    group "api" {
         count = 3
+        spread {
+            attribute = "${node.datacenter}"
+        }
         update {
             max_parallel     = 1
             canary           = 1
@@ -27,11 +66,10 @@ job "continuousdelivery" {
         task "api" {
             driver = "docker"
             config {
-                image       = "registry.gitlab.com/martinahrer/continuousdelivery:[[ .task.api.image.tag ]]"
-                force_pull = true
+                image = "registry.gitlab.com/martinahrer/continuousdelivery:${var.api_image_tag}"
                 auth {
-                    username = "[[ .registry.auth.username ]]"
-                    password = "[[ .registry.auth.password ]]"
+                    username = "${var.registry_auth_username}"
+                    password = "${var.registry_auth_password}"
                 }
                 ports = [
                     "http",
@@ -50,34 +88,20 @@ job "continuousdelivery" {
                 MANAGEMENT_SERVER_PORT  = "8081"
                 SPRING_JPA_GENERATE_DDL = true
             }
-
+            template {
+                destination="application.env"
+                env = true
+                data = <<EOH
+                SPRING_DATASOURCE_URL=jdbc:postgresql://{{ range nomadService "continuousdelivery-db" }}{{ .Address }}:{{ .Port }}{{ end }}/app
+                SPRING_DATASOURCE_USERNAME="spring"
+                SPRING_DATASOURCE_PASSWORD="boot"
+                EOH
+            }
             service {
                 name        = "continuousdelivery-api"
+                provider    = "nomad"
                 port        = "http"
-                tags        = [
-                    "traefik.enable=true",
-                    "traefik.tags=service",
-                    "traefik.http.routers.api.entrypoints=http",
-                    "traefik.http.routers.api.rule=PathPrefix(`/continuousdelivery/api/`)",
-                    "traefik.http.routers.api.middlewares=api-stripprefix",
-                    "traefik.http.middlewares.api-stripprefix.stripprefix.prefixes=/continuousdelivery",
-                    "traefik.http.middlewares.api-stripprefix.stripprefix.forceSlash=true"
-                ]
-
-                canary_tags = [
-                    "traefik.enable=false"
-                ]
-                check {
-                    name     = "continuousdelivery-api-check"
-                    type     = "http"
-                    port     = "management_http"
-                    path     = "/actuator/health"
-                    interval = "60s"
-                    timeout  = "10s"
-                    check_restart {
-                        grace = "60s"
-                    }
-                }
+                tags        = [ "api" ]
             }
         }
     }
