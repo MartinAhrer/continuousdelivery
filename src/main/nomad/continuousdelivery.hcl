@@ -35,9 +35,18 @@ job "continuousdelivery" {
             }
             service {
                 name = "continuousdelivery-db"
-                provider = "nomad"
+                provider = "consul"
                 port = "postgresdb"
                 tags = [ "db" ]
+                check {
+                    name     = "db-check"
+                    type     = "tcp"
+                    interval = "60s"
+                    timeout  = "4s"
+                    check_restart {
+                        grace = "20s"
+                    }
+                }
             }
         }
     }
@@ -92,16 +101,27 @@ job "continuousdelivery" {
                 destination="application.env"
                 env = true
                 data = <<EOH
-                SPRING_DATASOURCE_URL=jdbc:postgresql://{{ range nomadService "continuousdelivery-db" }}{{ .Address }}:{{ .Port }}{{ end }}/app
+                SPRING_DATASOURCE_URL=jdbc:postgresql://{{ range service "continuousdelivery-db" }}{{ .Address }}:{{ .Port }}{{ end }}/app
                 SPRING_DATASOURCE_USERNAME="spring"
                 SPRING_DATASOURCE_PASSWORD="boot"
                 EOH
             }
             service {
                 name        = "continuousdelivery-api"
-                provider    = "nomad"
+                provider    = "consul"
                 port        = "http"
                 tags        = [ "api" ]
+                check {
+                    name     = "continuousdelivery-api-check"
+                    type     = "http"
+                    port     = "management_http"
+                    path     = "/actuator/health"
+                    interval = "60s"
+                    timeout  = "10s"
+                    check_restart {
+                        grace = "60s"
+                    }
+                }
             }
         }
     }
