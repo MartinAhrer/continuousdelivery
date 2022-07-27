@@ -4,16 +4,15 @@ import at.martinahrer.cd.Application
 import at.martinahrer.cd.CompanyRepository
 import at.martinahrer.cd.model.Company
 import com.fasterxml.jackson.databind.ObjectMapper
-import org.junit.Before
-import org.junit.Rule
-import org.junit.Test
-import org.junit.runner.RunWith
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.extension.ExtendWith
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.hateoas.MediaTypes
-import org.springframework.restdocs.JUnitRestDocumentation
-import org.springframework.restdocs.mockmvc.RestDocumentationResultHandler
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner
+import org.springframework.restdocs.RestDocumentationContextProvider
+import org.springframework.restdocs.RestDocumentationExtension
+import org.springframework.test.context.junit.jupiter.SpringExtension
 import org.springframework.test.context.web.WebAppConfiguration
 import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.setup.MockMvcBuilders
@@ -26,47 +25,35 @@ import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.docu
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.documentationConfiguration
 import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.get
 import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.post
-import static org.springframework.restdocs.operation.preprocess.Preprocessors.*
+import static org.springframework.restdocs.operation.preprocess.Preprocessors.prettyPrint
 import static org.springframework.restdocs.payload.PayloadDocumentation.*
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 
-@RunWith(SpringJUnit4ClassRunner.class)
+@ExtendWith([RestDocumentationExtension, SpringExtension])
 @SpringBootTest(classes = Application)
 @WebAppConfiguration
 class CompanyApiDocumentation {
 
     Closure<String> VALUE_WRITER = { def content -> this.objectMapper.writeValueAsString(content) }
 
-    @Rule
-    public JUnitRestDocumentation restDocumentation = new JUnitRestDocumentation("build/generated-snippets/company")
-
-    @Autowired
-    private WebApplicationContext context
-
     @Autowired
     private ObjectMapper objectMapper
-
-    private RestDocumentationResultHandler documentationHandler
 
     private MockMvc mockMvc
 
     @Autowired
     private CompanyRepository companyRepository
 
-
-    @Before
-    void setUp() {
-        this.documentationHandler = document("{method-name}",
-                preprocessRequest(prettyPrint()),
-                preprocessResponse(prettyPrint()))
-
-        this.mockMvc = MockMvcBuilders.webAppContextSetup(this.context)
-                .apply(documentationConfiguration(this.restDocumentation))
-                .alwaysDo(this.documentationHandler)
+    @BeforeEach
+    void setUp(WebApplicationContext webApplicationContext, RestDocumentationContextProvider restDocumentation) {
+        this.mockMvc = MockMvcBuilders.webAppContextSetup(webApplicationContext)
+                .apply(documentationConfiguration(restDocumentation)
+                .operationPreprocessors()
+                    .withRequestDefaults(prettyPrint())
+                    .withResponseDefaults(prettyPrint()))
                 .build()
 
         createExampleCompany()
-        return
     }
 
     private void createExampleCompany() {
@@ -82,7 +69,7 @@ class CompanyApiDocumentation {
     void listExample() {
         this.mockMvc.perform(get("/api/companies").accept(MediaTypes.HAL_JSON))
                 .andExpect(status().isOk())
-                .andDo(documentationHandler.document(
+                .andDo(document("{class-name}/{method-name}",
                     links(
                         linkWithRel("self").description("This <<resources-companies,companies>>"),
                         linkWithRel("profile").description("The <<resources-companies-profile, companies profile resource>>")),
@@ -98,7 +85,7 @@ class CompanyApiDocumentation {
     void getByIdExample() {
         this.mockMvc.perform(get("/api/companies/1").accept(MediaTypes.HAL_JSON))
                 .andExpect(status().isOk())
-                .andDo(documentationHandler.document(
+                .andDo(document("{class-name}/{method-name}",
                     links(
                         linkWithRel("self").description("This <<resources-companies,company>>"),
                         linkWithRel("company").description("This <<resources-companies,company>>")
@@ -118,7 +105,7 @@ class CompanyApiDocumentation {
         this.mockMvc.perform(
                 post("/api/companies").contentType(MediaTypes.HAL_JSON).content(resource))
                 .andExpect(status().isCreated())
-                .andDo(documentationHandler.document(
+                .andDo(document("{class-name}/{method-name}",
                     requestFields(
                             fieldWithPath("name")
                                     .description("The name of the company"),

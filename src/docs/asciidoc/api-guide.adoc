@@ -64,7 +64,7 @@ use of HTTP status codes.
 
 Every response has the following header(s):
 
-include::{snippets}/general/headers-example/response-headers.adoc[]
+include::{snippets}/general-api-documentation/headers-example/response-headers.adoc[]
 
 [[overview-errors]]
 === Errors
@@ -72,12 +72,12 @@ include::{snippets}/general/headers-example/response-headers.adoc[]
 Whenever an error response (status code >= 400) is returned, the body will contain a JSON object
 that describes the problem. The error object has the following structure:
 
-include::{snippets}/general/error-example/response-fields.adoc[]
+include::{snippets}/general-api-documentation/error-example/response-fields.adoc[]
 
 For example, a request that attempts to apply a non-existent tag to a note will produce a
 `400 Bad Request` response:
 
-include::{snippets}/general/error-example/http-response.adoc[]
+include::{snippets}/general-api-documentation/error-example/http-response.adoc[]
 
 [[overview-hypermedia]]
 === Hypermedia
@@ -104,17 +104,17 @@ A `GET` request is used to access the index
 
 ===== Response structure
 
-include::{snippets}/general/index-example/response-fields.adoc[]
+include::{snippets}/general-api-documentation/index-example/response-fields.adoc[]
 
 ===== Example response
 
-include::{snippets}/general/index-example/http-response.adoc[]
+include::{snippets}/general-api-documentation/index-example/http-response.adoc[]
 
 
 [[resources-index-links]]
 ===== Links
 
-include::{snippets}/general/index-example/links.adoc[]
+include::{snippets}/general-api-documentation/index-example/links.adoc[]
 
 
 [[resources-companies]]
@@ -129,20 +129,20 @@ A `GET` request will list all of the service's companies.
 
 ===== Response structure
 
-include::{snippets}/company/list-example/response-fields.adoc[]
+include::{snippets}/company-api-documentation/list-example/response-fields.adoc[]
 
 ===== Example request
 
-include::{snippets}/company/list-example/curl-request.adoc[]
+include::{snippets}/company-api-documentation/list-example/curl-request.adoc[]
 
 ===== Example response
 
-include::{snippets}/company/list-example/http-response.adoc[]
+include::{snippets}/company-api-documentation/list-example/http-response.adoc[]
 
 [[]]
 ===== Links
 
-include::{snippets}/company/list-example/links.adoc[]
+include::{snippets}/company-api-documentation/list-example/links.adoc[]
 
 [[resources-companies-get-by-id]]
 ==== Get a company
@@ -151,20 +151,20 @@ A `GET` request will get one of the service's companies identified by its id.
 
 ===== Response structure
 
-include::{snippets}/company/get-by-id-example/response-fields.adoc[]
+include::{snippets}/company-api-documentation/get-by-id-example/response-fields.adoc[]
 
 ===== Example request
 
-include::{snippets}/company/get-by-id-example/curl-request.adoc[]
+include::{snippets}/company-api-documentation/get-by-id-example/curl-request.adoc[]
 
 ===== Example response
 
-include::{snippets}/company/get-by-id-example/http-response.adoc[]
+include::{snippets}/company-api-documentation/get-by-id-example/http-response.adoc[]
 
 [[resources-companies-links]]
 ===== Links
 
-include::{snippets}/company/get-by-id-example/links.adoc[]
+include::{snippets}/company-api-documentation/get-by-id-example/links.adoc[]
 
 [[resources-companies-create]]
 ==== Creating a company
@@ -173,12 +173,12 @@ A `POST` request is used to create a company
 
 ===== Request structure
 
-include::{snippets}/company/create-example/request-fields.adoc[]
+include::{snippets}/company-api-documentation/create-example/request-fields.adoc[]
 
 ===== Example request
 
-include::{snippets}/company/create-example/curl-request.adoc[]
+include::{snippets}/company-api-documentation/create-example/curl-request.adoc[]
 
 ===== Example response
 
-include::{snippets}/company/create-example/http-response.adoc[]
+include::{snippets}/company-api-documentation/create-example/http-response.adoc[]

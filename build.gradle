@@ -17,7 +17,7 @@ plugins {
     id 'maven-publish'
     //id 'net.ltgt.apt' version '0.19'
     //id 'net.ltgt.apt-idea' version '0.19'
-    //id 'org.asciidoctor.convert' version '2.4.0' // TODO docsTest is not creating asciidoc output
+    id "org.asciidoctor.jvm.convert" version "3.3.2"
     id 'org.unbroken-dome.test-sets' version '4.0.0'
     id 'com.jfrog.bintray' version '1.7'
     id 'org.springframework.boot' version '2.7.1'
@@ -42,7 +42,7 @@ targetCompatibility = JavaVersion.VERSION_17
 
 ext {
     groovyMinorVersion = '3.0'
-    groovyVersion = "${groovyMinorVersion}.8"
+    groovyVersion = "${groovyMinorVersion}.+"
     spockVersion = "2.0-groovy-${groovyMinorVersion}"
     lombokVersion = '1.18.20'
     logbackVersion = '1.2.3'
@@ -57,6 +57,23 @@ testSets {
     docsTest {
         dirName = 'docs'
     }
+}
+
+docsTest {
+    outputs.dir snippetsDir
+}
+
+configurations {
+    asciidoctorExt
+}
+
+asciidoctor {
+    attributes 'snippets': snippetsDir
+
+    // https://docs.spring.io/spring-restdocs/docs/current/reference/html5/#getting-started-build-configuration
+    configurations 'asciidoctorExt'
+    inputs.dir snippetsDir
+    dependsOn docsTest
 }
 
 sourceSets {
@@ -113,12 +130,14 @@ dependencies {
     testImplementation "org.spockframework:spock-spring:$spockVersion"
     addSpockDependencies(it, 'test')
 
+    asciidoctorExt 'org.springframework.restdocs:spring-restdocs-asciidoctor:2.0.6.RELEASE'
+    docsTestImplementation "org.codehaus.groovy:groovy-json:$groovyVersion"
+    docsTestCompileOnly "org.ow2.asm:asm:9.3"
     docsTestImplementation 'org.junit.jupiter:junit-jupiter'
     docsTestImplementation 'org.junit.vintage:junit-vintage-engine'
-    docsTestImplementation 'org.springframework.restdocs:spring-restdocs-mockmvc:2.0.2.RELEASE'
+    docsTestImplementation 'org.springframework.restdocs:spring-restdocs-mockmvc:2.0.6.RELEASE'
     docsTestImplementation 'com.jayway.jsonpath:json-path'
     docsTestImplementation 'org.hamcrest:hamcrest-library'
-
     docsTestImplementation('org.springframework.boot:spring-boot-starter-test')
     docsTestRuntimeOnly('com.h2database:h2:1.4.191')
     docsTestImplementation(testFixtures(project(":")))
@@ -137,7 +156,6 @@ dependencies {
     localIntegrationTestRuntimeOnly('com.h2database:h2:1.4.191')
     localIntegrationTestImplementation(testFixtures(project(":")))
 }
-
 
 configurations
         .findAll { (it.name == 'testImplementation' || it.name == 'testFixturesImplementation' || it.name.endsWith('TestImplementation')) }
@@ -159,6 +177,8 @@ configurations.all {
             details.useVersion logbackVersion
         }
     }
+    exclude group: 'com.vaadin.external.google', module: 'android-json' // conflicts with jackson
+    //exclude group: 'junit' // use junit 5, not 4 --> Spring rest docs is still requiring junit4
 }
 
 test {
@@ -172,11 +192,6 @@ tasks.withType(Test) {
     }
 }
 
-//asciidoctor {
-//    attributes 'snippets': snippetsDir
-//    inputs.dir snippetsDir
-//    dependsOn docsTest
-//}
 
 // check: is it still required with ltgt
 //idea {
@@ -207,7 +222,7 @@ tasks.withType(Test) {
 //}
 
 tasks.named('build').configure {
-    //dependsOn tasks.named('asciidoctor') // TODO does not work currently
+    dependsOn tasks.named('asciidoctor')
 }
 
 tasks.named('check').configure {
@@ -233,11 +248,9 @@ bintray {
     }
 }
 
-
 bootJar {
     archiveFileName = "${archiveBaseName.get()}.${archiveExtension.get()}"
 }
-
 
 
 apply from: "${rootDir}/gradle/publishing.gradle"
