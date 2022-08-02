@@ -1,10 +1,9 @@
+import org.springframework.boot.gradle.plugin.SpringBootPlugin
+
 buildscript {
     repositories {
         gradlePluginPortal()
         mavenCentral()
-    }
-    dependencies {
-        classpath "org.ajoberstar.grgit:grgit-gradle:4.1.0"
     }
 }
 
@@ -15,22 +14,25 @@ plugins {
     id 'groovy'
     id 'idea'
     id 'maven-publish'
+    id 'version-catalog'
     //id 'net.ltgt.apt' version '0.19'
     //id 'net.ltgt.apt-idea' version '0.19'
-    id "org.asciidoctor.jvm.convert" version "3.3.2"
-    id 'org.unbroken-dome.test-sets' version '4.0.0'
-    id 'com.jfrog.bintray' version '1.7'
-    id 'org.springframework.boot' version '2.7.1'
-    id 'com.google.cloud.tools.jib' version '3.1.4'
-    id 'org.ajoberstar.reckon' version '0.13.1' apply false
-    id "org.cyclonedx.bom" version "1.4.1"
+    alias(libs.plugins.benmanes.versions)
+    alias(libs.plugins.asciidoctor.convert)
+    alias(libs.plugins.test.sets)
+    alias(libs.plugins.bintray)
+    alias(libs.plugins.spring.boot)
+    alias(libs.plugins.jib)
+    alias(libs.plugins.grgit)
+    alias(libs.plugins.reckon) apply false
+    alias(libs.plugins.cyclondx)
 }
 
-apply plugin: "io.spring.dependency-management"
 apply from: "${rootDir}/gradle/version.gradle"
 apply from: "${rootDir}/gradle/docker/dockerfile.gradle"
 apply from: "${rootDir}/gradle/docker/spring-boot-gitlab.gradle"
 apply from: "${rootDir}/gradle/docker/jib.gradle"
+apply from: "${rootDir}/gradle/outdated-dependency.gradle"
 
 repositories {
     mavenCentral()
@@ -42,15 +44,9 @@ sourceCompatibility = JavaVersion.VERSION_17
 targetCompatibility = JavaVersion.VERSION_17
 
 ext {
-    groovyMinorVersion = '3.0'
-    groovyVersion = "${groovyMinorVersion}.+"
-    spockVersion = "2.0-groovy-${groovyMinorVersion}"
-    lombokVersion = '1.18.20'
-    logbackVersion = '1.2.3'
     snippetsDir = file('build/generated-snippets')
 }
 
-ext['spock.version'] = spockVersion
 
 testSets {
     localIntegrationTest
@@ -85,99 +81,82 @@ sourceSets {
     }
 }
 
-// According to https://docs.spring.io/spring-boot/docs/current/gradle-plugin/reference/htmlsingle/#managing-dependencies.dependency-management-plugin
-// the Maven BOM is automatically imported
-//dependencyManagement {
-//    imports {
-//        mavenBom org.springframework.boot.gradle.plugin.SpringBootPlugin.BOM_COORDINATES
-//    }
-//}
-
 dependencies {
-    annotationProcessor "org.projectlombok:lombok:${lombokVersion}"
-    annotationProcessor 'org.springframework.boot:spring-boot-configuration-processor'
+    annotationProcessor(platform(SpringBootPlugin.BOM_COORDINATES))
+    annotationProcessor (libs.lombok)
+    annotationProcessor(libs.spring.boot.configuration.processor)
 
-    implementation('org.springframework.boot:spring-boot-starter')
-    implementation('org.springframework.boot:spring-boot-starter-data-rest')
-    implementation('org.springframework.data:spring-data-rest-webmvc')
-    implementation('org.springframework.boot:spring-boot-starter-data-jpa')
-    implementation('org.springframework.boot:spring-boot-starter-hateoas')
-    implementation('org.springframework.boot:spring-boot-starter-actuator')
-    implementation('org.springframework.boot:spring-boot-starter-validation')
-    runtimeOnly('org.springframework.boot:spring-boot-starter-logging')
+    implementation(platform(SpringBootPlugin.BOM_COORDINATES))
+    implementation(libs.spring.boot.starter)
+    implementation(libs.spring.boot.starter.actuator)
+    implementation(libs.spring.boot.starter.data.jpa)
+    implementation(libs.spring.boot.starter.data.rest)
+    implementation(libs.spring.boot.starter.hateoas)
+    implementation(libs.spring.boot.starter.validation)
+    implementation(libs.spring.data.rest.webmvc)
 
-    compileOnly('org.hibernate.javax.persistence:hibernate-jpa-2.1-api:1.0.0.Final')
-    compileOnly("org.projectlombok:lombok:$lombokVersion")
+    compileOnly(libs.jpa.api)
+    compileOnly(libs.lombok)
 
-    // TODO replace hal browser
-    runtimeOnly('org.springframework.data:spring-data-rest-hal-explorer')
+    runtimeOnly(platform(SpringBootPlugin.BOM_COORDINATES))
+    runtimeOnly(libs.bundles.logback)
+    runtimeOnly(libs.h2database)
+    runtimeOnly(libs.jcl.over.slf4j)
+    runtimeOnly(libs.postgresql)
+    runtimeOnly(libs.spring.boot.starter.logging)
+    runtimeOnly(libs.spring.data.rest.hal.explorer)
+    runtimeOnly (libs.logstash.logback.encoder)
 
-    runtimeOnly('org.postgresql:postgresql:9.4-1200-jdbc41') {
-        exclude group: 'org.slf4j', module: 'slf4j-simple'
-    }
-    runtimeOnly('com.h2database:h2:1.4.191')
+    testFixturesImplementation(libs.groovy)
+    testFixturesImplementation(libs.groovy.json)
 
-    runtimeOnly('net.logstash.logback:logstash-logback-encoder:4.9') {
-        exclude group: 'ch.qos.logback', module: "logback-core"
-    }
-    runtimeOnly("ch.qos.logback:logback-core:${logbackVersion}")
-    runtimeOnly("ch.qos.logback:logback-classic:${logbackVersion}")
-    runtimeOnly('org.slf4j:jcl-over-slf4j:1.7.25')
+    asciidoctorExt(platform(SpringBootPlugin.BOM_COORDINATES))
+    asciidoctorExt(libs.spring.restdocs.asciidoctor)
 
-    testFixturesImplementation "org.codehaus.groovy:groovy:$groovyVersion"
-    testFixturesImplementation "org.codehaus.groovy:groovy-json:$groovyVersion"
-
-    testImplementation('org.springframework:spring-test')
-    testImplementation "org.spockframework:spock-spring:$spockVersion"
-    addSpockDependencies(it, 'test')
-
-    asciidoctorExt 'org.springframework.restdocs:spring-restdocs-asciidoctor:2.0.6.RELEASE'
-    docsTestImplementation "org.codehaus.groovy:groovy-json:$groovyVersion"
-    docsTestCompileOnly "org.ow2.asm:asm:9.3"
-    docsTestImplementation 'org.junit.jupiter:junit-jupiter'
-    docsTestImplementation 'org.junit.vintage:junit-vintage-engine'
-    docsTestImplementation 'org.springframework.restdocs:spring-restdocs-mockmvc:2.0.6.RELEASE'
-    docsTestImplementation 'com.jayway.jsonpath:json-path'
-    docsTestImplementation 'org.hamcrest:hamcrest-library'
-    docsTestImplementation('org.springframework.boot:spring-boot-starter-test')
-    docsTestRuntimeOnly('com.h2database:h2:1.4.191')
+    docsTestImplementation(libs.groovy)
+    docsTestImplementation(libs.groovy.json)
+    docsTestCompileOnly(libs.asm)
+    docsTestImplementation(libs.junit.jupiter.api)
+    docsTestImplementation(libs.junit.vintage.engine)
+    docsTestImplementation (libs.spring.restdocs.mockmvc)
+    docsTestImplementation (libs.json.path)
+    docsTestImplementation (libs.hamcrest.library)
+    docsTestImplementation(libs.spring.boot.starter.test)
+    docsTestRuntimeOnly(libs.h2database)
     docsTestImplementation(testFixtures(project(":")))
 
-    integrationTestImplementation "org.codehaus.groovy:groovy-json:$groovyVersion"
-    integrationTestImplementation('org.springframework.boot:spring-boot-starter-test')
-    integrationTestRuntimeOnly('com.h2database:h2:1.4.191')
+    integrationTestImplementation(libs.groovy)
+    integrationTestImplementation(libs.groovy.json)
+    integrationTestImplementation(libs.spock.spring)
+    integrationTestImplementation(libs.spring.boot.starter.test)
+    integrationTestImplementation(libs.spring.test)
+    integrationTestRuntimeOnly(libs.h2database)
     integrationTestImplementation(testFixtures(project(":")))
+    addSpockDependencies(it, 'integrationTest')
 
-
-    addSpockDependencies(it, 'localIntegrationTest')
-    localIntegrationTestImplementation "org.spockframework:spock-spring:$spockVersion"
-    localIntegrationTestImplementation "org.codehaus.groovy:groovy-json:$groovyVersion"
-    localIntegrationTestImplementation('org.springframework.boot:spring-boot-starter-test')
-    localIntegrationTestImplementation('org.springframework.boot:spring-boot')
-    localIntegrationTestRuntimeOnly('com.h2database:h2:1.4.191')
+    localIntegrationTestImplementation(libs.spock.spring)
+    localIntegrationTestImplementation(libs.groovy)
+    localIntegrationTestImplementation(libs.groovy.json)
+    localIntegrationTestImplementation(libs.spring.boot.starter)
+    localIntegrationTestImplementation(libs.spring.boot.starter.test)
+    localIntegrationTestRuntimeOnly(libs.h2database)
     localIntegrationTestImplementation(testFixtures(project(":")))
+    addSpockDependencies(it, 'localIntegrationTest')
 }
 
 configurations
         .findAll { (it.name == 'testImplementation' || it.name == 'testFixturesImplementation' || it.name.endsWith('TestImplementation')) }
         .each {
-            project.dependencies.add(it.name, project.dependencies.platform("org.spockframework:spock-bom:${spockVersion}"))
+            project.dependencies.add(it.name, project.dependencies.platform(libs.spock.bom))
         }
 
-def addSpockDependencies (DependencyHandler dependencies, String testType) {
-    dependencies.add("${testType}Implementation", "org.codehaus.groovy:groovy:${groovyVersion}")
-    dependencies.add("${testType}Implementation", "org.spockframework:spock-core")
-    dependencies.add("${testType}RuntimeOnly", "net.bytebuddy:byte-buddy:1.12.+") // allows mocking of classes (in addition to interfaces)
-    dependencies.add("${testType}RuntimeOnly", "org.objenesis:objenesis:3.2") // allows mocking of classes without default constructor (together with ByteBuddy or CGLIB)
+def addSpockDependencies(DependencyHandler dependencies, String testType) {
+    dependencies.add("${testType}Implementation", libs.groovy)
+    dependencies.add("${testType}Implementation", libs.spock)
+    dependencies.add("${testType}RuntimeOnly", libs.bundles.spockClassMocking)
 }
 
 configurations.all {
-    resolutionStrategy.eachDependency { DependencyResolveDetails details ->
-        if (details.requested.group == 'ch.qos.logback' && details.requested.name.startsWith('logback-')) {
-            //prefer different version which contains some necessary fixes
-            details.useVersion logbackVersion
-        }
-    }
     exclude group: 'com.vaadin.external.google', module: 'android-json' // conflicts with jackson
     //exclude group: 'junit' // use junit 5, not 4 --> Spring rest docs is still requiring junit4
 }

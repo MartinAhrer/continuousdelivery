@@ -1,6 +1,5 @@
 package test
 
-
 import groovy.json.JsonBuilder
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
@@ -22,7 +21,7 @@ import spock.lang.Specification
 class CompanyApiTest extends Specification {
 
     @Value('${test.server.host}')
-    String host = "localhost"
+    String host
 
     @Value('${test.server.port}')
     int port;
@@ -42,7 +41,7 @@ class CompanyApiTest extends Specification {
         def request = new HttpEntity<String>(builder.toPrettyString(), headers)
 
         when:
-        def response=restTemplate.postForEntity("http://$host:$port/api/companies", request, Object)
+        def response=restTemplate.postForEntity("http://$host:$port/api/companies", request, Void)
 
         then:
         response.statusCode == HttpStatus.CREATED

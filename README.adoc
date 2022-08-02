@@ -10,6 +10,7 @@ INFO: This is work in progress. We will add features for demoing various aspects
 * Add Sonar (metrics)
 * Add build facade (gradle tasks for stages commit, integrationTest, userAcceptanceTest, production)
 * Add flyway data migration
+* Add containerized test with postgresql
 
 == Build
 
@@ -34,6 +35,14 @@ jib -Djib.from.image=arm64v8/openjdk:11-jre-slim -Djib.to.image="$CI_REGISTRY_IM
 ----
 
 == Dependency Management
+
+=== Dependency up-to-date check
+
+[source,bash]
+----
+./gradlew dependencyUpdates
+----
+
 
 === Dependency vulnerability checking
 

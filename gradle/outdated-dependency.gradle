@@ -1,0 +1,31 @@
+
+buildscript {
+    repositories {
+        gradlePluginPortal()
+    }
+
+    def versionCatalog = extensions.getByType(VersionCatalogsExtension).named("libs")
+    dependencies {
+        classpath "com.github.ben-manes:gradle-versions-plugin:${versionCatalog.findVersion('benmanesVersions').get()}"
+    }
+}
+
+apply plugin: "com.github.ben-manes.versions"
+
+def isNonStableDependency = { def candidate ->
+    def stableKeyword = ['RELEASE', 'FINAL', 'GA'].any { it -> candidate.version.toUpperCase().contains(it) }
+    def regex = /^[0-9,.v-]+(-r)?$/
+    def spockStable = /^[0-9,.v-]+(-r)?-groovy-[0-9,.v-]+(-r)?$/ // spock is using variants for groovy versions such as 2.1-groovy-3.0
+
+    return !stableKeyword && !(candidate.version ==~ regex) && !(candidate.version ==~ spockStable)
+}
+
+tasks.named('dependencyUpdates').configure {
+    rejectVersionIf {
+        isNonStableDependency(it.candidate)
+    }
+}
+
+tasks.named('check').configure {
+    dependsOn (tasks.named('dependencyUpdates'))
+}
