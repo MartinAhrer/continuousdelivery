@@ -6,7 +6,7 @@ version: '2'
 
 services:
   stage-base:
-    image: adoptopenjdk/openjdk11:alpine-jdk
+    image: eclipse-temurin:17-jdk-alpine
     environment:
       - GRADLE_OPTS
       - APP_TAG

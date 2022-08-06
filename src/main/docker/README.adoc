@@ -56,6 +56,6 @@ export APP_TAG=latest
 export PROJECT_DIR=${PWD}
 # have to change to the directory containing the compose files, it also contains a .env file. TODO replace by values in the compose-file/exported variables
 cd build/docker
-docker-compose -f docker-compose.yml -f pipeline-integration-test.yml run --rm integration-test
-docker-compose -f docker-compose.yml -f pipeline-integration-test.yml down -v
+docker compose -f docker-compose.yml -f pipeline-integration-test.yml run --rm integration-test
+docker compose -f docker-compose.yml -f pipeline-integration-test.yml down -v
 ----

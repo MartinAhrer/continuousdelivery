@@ -1,4 +1,4 @@
-FROM adoptopenjdk/openjdk11:alpine-jre
+FROM eclipse-temurin:17-jre-alpine
 LABEL maintainer='Martin Ahrer <this@martinahrer.at>'
 EXPOSE 8080
 CMD ["java", "-jar", "/opt/app/app.jar"]
