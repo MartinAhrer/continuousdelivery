@@ -1,0 +1,13 @@
+#!/usr/bin/env sh
+set -euo pipefail
+# Set a trap for SIGINT and SIGTERM signals
+trap restoreGit SIGTERM SIGINT
+echo "*** Running pre-commit unit tests"
+git stash -q --keep-index
+./gradlew test
+status=$?
+echo "*** Done running pre-commit unit tests"
+exit $status
+function restoreGit() {
+  git stash pop -q
+}

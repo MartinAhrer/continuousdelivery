@@ -83,7 +83,7 @@ sourceSets {
 
 dependencies {
     annotationProcessor(platform(SpringBootPlugin.BOM_COORDINATES))
-    annotationProcessor (libs.lombok)
+    annotationProcessor(libs.lombok)
     annotationProcessor(libs.spring.boot.configuration.processor)
 
     implementation(platform(SpringBootPlugin.BOM_COORDINATES))
@@ -105,7 +105,7 @@ dependencies {
     runtimeOnly(libs.postgresql)
     runtimeOnly(libs.spring.boot.starter.logging)
     runtimeOnly(libs.spring.data.rest.hal.explorer)
-    runtimeOnly (libs.logstash.logback.encoder)
+    runtimeOnly(libs.logstash.logback.encoder)
 
     testFixturesImplementation(libs.groovy)
     testFixturesImplementation(libs.groovy.json)
@@ -118,9 +118,9 @@ dependencies {
     docsTestCompileOnly(libs.asm)
     docsTestImplementation(libs.junit.jupiter.api)
     docsTestImplementation(libs.junit.vintage.engine)
-    docsTestImplementation (libs.spring.restdocs.mockmvc)
-    docsTestImplementation (libs.json.path)
-    docsTestImplementation (libs.hamcrest.library)
+    docsTestImplementation(libs.spring.restdocs.mockmvc)
+    docsTestImplementation(libs.json.path)
+    docsTestImplementation(libs.hamcrest.library)
     docsTestImplementation(libs.spring.boot.starter.test)
     docsTestRuntimeOnly(libs.h2database)
     docsTestImplementation(testFixtures(project(":")))
@@ -234,3 +234,20 @@ bootJar {
 
 
 apply from: "${rootDir}/gradle/publishing.gradle"
+
+
+task installLocalGitHook(type: Copy) {
+    def file = new File(rootProject.rootDir, 'git-hooks/pre-commit')
+    inputs.files file
+
+    def target = new File(rootProject.rootDir, '.git/hooks/')
+    outputs.files new File(target, name)
+
+    from file
+    into {
+        target
+    }
+    fileMode 0775
+}
+
+build.dependsOn installLocalGitHook
