@@ -5,6 +5,9 @@ variables:
     description: "Common Gradle options"
   DEFAULT_JOB_IMAGE_NAME:
     value: eclipse-temurin:17-jdk-alpine
+  DEFAULT_NOMAD_ADDR:
+    value: http://192.168.1.18:4646
+    description: "The nomad cluster IP"
 
 include:
     # Include some default job templates for various job types
@@ -30,31 +33,56 @@ check:
         - name: bitnami/postgresql:11
           alias: postgresql
 
-deliver:
-    services:
-        - docker:19-dind
 
+deliver:
+    #docker sevice only required for Spring boot buildpack
+    #services:
+    #    - docker:19-dind
+    variables:
+      JIB_FROM_IMAGE: eclipse-temurin:17-jre-alpine
+      DELIVER_JOB_GRADLE_TASK_ARGS: jib
 
 deploy:
     extends: .default-job
-    image: hashicorp/levant:0.3.0
+    image: ${CI_REGISTRY}/codebreeze-io/devops/nomad-cli:1.3.5
     needs:
         - job: deliver
-          artifacts: false # artifacts are pushed to registry and will be pulled by nomad
+          artifacts: false # deliver pushed artifacts to registry and will be pulled by nomad
     tags:
         - nomad-cluster
     cache: []
     script:
         - |
-          levant render -var-file src/main/nomad/levant.yml src/main/nomad/continuousdelivery.hcl
+          cd src/main/nomad
+          export NOMAD_ADDR=${DEFAULT_NOMAD_ADDR}
+          nomad namespace apply ${NOMAD_NAMESPACE}
+          nomad job run \
+            --namespace "${NOMAD_NAMESPACE}" \
+            --var environment="${NOMAD_NAMESPACE}" \
+            --var-file continuousdelivery-configuration.hcl \
+            --var api_image_tag=${API_IMAGE_TAG} \
+            --var registry_auth_username=${CI_REGISTRY_USER} \
+            --var registry_auth_password=${CI_REGISTRY_PASSWORD} \
+            --detach \
+          continuousdelivery.hcl
+
   # TODO provide delivery rules as template in codebreeze-io/project-template/gitlab-gradle-template
     rules:
-      # Always deliver a tagged build
+      # Manually deploy a tagged build
       - if: '$CI_COMMIT_TAG'
-        when: on_success # the default
+        when: manual # the default
+        variables:
+          NOMAD_NAMESPACE: production
+          API_IMAGE_TAG: $CI_COMMIT_TAG
       # Manually deliver a feature branch build
       - if: '$CI_COMMIT_BRANCH =~ /feature\/.*/'
         when: manual
+        variables:
+          NOMAD_NAMESPACE: $CI_COMMIT_REF_SLUG
+          API_IMAGE_TAG: $CI_COMMIT_REF_SLUG
       # Manually deliver a merge request build
       - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
         when: manual
+        variables:
+          NOMAD_NAMESPACE: $CI_COMMIT_REF_SLUG
+          API_IMAGE_TAG: $CI_COMMIT_REF_SLUG

@@ -10,6 +10,10 @@ variable "registry_auth_password" {
     type = string
 }
 
+variable "environment" {
+    type = string
+}
+
 job "continuousdelivery" {
     datacenters = ["dc1"]
     type = "service"
@@ -34,7 +38,7 @@ job "continuousdelivery" {
                 POSTGRESQL_PASSWORD="boot"
             }
             service {
-                name = "continuousdelivery-db"
+                name = "continuousdelivery-db-${var.environment}"
                 provider = "consul"
                 port = "postgresdb"
                 tags = [ "db" ]
@@ -101,13 +105,13 @@ job "continuousdelivery" {
                 destination="application.env"
                 env = true
                 data = <<EOH
-                SPRING_DATASOURCE_URL=jdbc:postgresql://{{ range service "continuousdelivery-db" }}{{ .Address }}:{{ .Port }}{{ end }}/app
+                SPRING_DATASOURCE_URL=jdbc:postgresql://{{ range service "continuousdelivery-db-${var.environment}" }}{{ .Address }}:{{ .Port }}{{ end }}/app
                 SPRING_DATASOURCE_USERNAME="spring"
                 SPRING_DATASOURCE_PASSWORD="boot"
                 EOH
             }
             service {
-                name        = "continuousdelivery-api"
+                name        = "continuousdelivery-api-${var.environment}"
                 provider    = "consul"
                 port        = "http"
                 tags        = [ "api" ]

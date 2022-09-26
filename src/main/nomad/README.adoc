@@ -18,11 +18,14 @@ TODO
 == Deploy traefik
 
 ----
-docker container run --rm -ti -v ${PWD}:/levant --workdir /levant -e NOMAD_ADDR=http://192.168.1.18:4646 hashicorp/levant:0.3.0 levant deploy traefik.hcl
+docker container run --rm -ti -v ${PWD}:/levant --workdir /levant -e NOMAD_ADDR=http://localhost:4646 hashicorp/levant:0.3.1 levant deploy traefik.hcl
 ----
 
 == Deploy application
 
+[source,bash]
 ----
-docker container run --rm -ti -v ${PWD}:/levant --workdir /levant -e NOMAD_ADDR=http://192.168.1.18:4646 hashicorp/levant:0.3.0 levant deploy -var-file levant.yml -var-file credentials.yml continuousdelivery.hcl
+export NOMAD_NAMESPACE="feature-actuator"
+nomad namespace apply "${NOMAD_NAMESPACE}"
+nomad job run --var environment="${NOMAD_NAMESPACE}" --namespace="${NOMAD_NAMESPACE}" --var-file continuousdelivery-configuration.hcl --var-file credentials.hcl continuousdelivery.hcl
 ----
