@@ -49,13 +49,13 @@ groovy = { module = "org.codehaus.groovy:groovy", version.ref = "groovy" }
 groovy-json = { module = "org.codehaus.groovy:groovy-json", version.ref = "groovy" }
 
 
-hamcrest-library = { module = "org.hamcrest:hamcrest-library"}
+hamcrest-library = { module = "org.hamcrest:hamcrest-library" }
 h2database = { module = "com.h2database:h2", version.ref = "h2database" }
 
 jcl-over-slf4j = { module = "org.slf4j:jcl-over-slf4j" }
 jpa-api = { module = "org.hibernate.javax.persistence:hibernate-jpa-2.1-api", version.ref = "jpaApi" }
 
-json-path = {module ="com.jayway.jsonpath:json-path"}
+json-path = { module = "com.jayway.jsonpath:json-path" }
 
 junit-jupiter-api = { module = "org.junit.jupiter:junit-jupiter-api", version.ref = "jupiter" }
 junit-vintage-engine = { module = "org.junit.vintage:junit-vintage-engine", version.ref = "jupiter" }
@@ -73,21 +73,21 @@ spock = { module = "org.spockframework:spock-core", version.ref = "spock" }
 spock-bom = { module = "org.spockframework:spock-bom", version.ref = "spock" }
 spock-spring = { module = "org.spockframework:spock-spring", version.ref = "spock" }
 
-spring-boot-configuration-processor= {module ="org.springframework.boot:spring-boot-configuration-processor" }
+spring-boot-configuration-processor = { module = "org.springframework.boot:spring-boot-configuration-processor" }
 spring-boot-starter = { module = "org.springframework.boot:spring-boot-starter" }
 spring-boot-starter-actuator = { module = "org.springframework.boot:spring-boot-starter-actuator" }
 spring-boot-starter-data-rest = { module = "org.springframework.boot:spring-boot-starter-data-rest" }
 spring-boot-starter-data-jpa = { module = "org.springframework.boot:spring-boot-starter-data-jpa" }
 spring-boot-starter-hateoas = { module = "org.springframework.boot:spring-boot-starter-hateoas" }
 spring-boot-starter-logging = { module = "org.springframework.boot:spring-boot-starter-logging" }
-spring-boot-starter-test = { module = "org.springframework.boot:spring-boot-starter-test"}
+spring-boot-starter-test = { module = "org.springframework.boot:spring-boot-starter-test" }
 spring-boot-starter-validation = { module = "org.springframework.boot:spring-boot-starter-validation" }
 
-spring-data-rest-hal-explorer = { module="org.springframework.data:spring-data-rest-hal-explorer"}
-spring-data-rest-webmvc = { module="org.springframework.data:spring-data-rest-webmvc"}
-spring-test = { module="org.springframework:spring-test"}
-spring-restdocs-asciidoctor = { module="org.springframework.restdocs:spring-restdocs-asciidoctor"}
-spring-restdocs-mockmvc = { module="org.springframework.restdocs:spring-restdocs-mockmvc"}
+spring-data-rest-hal-explorer = { module = "org.springframework.data:spring-data-rest-hal-explorer" }
+spring-data-rest-webmvc = { module = "org.springframework.data:spring-data-rest-webmvc" }
+spring-test = { module = "org.springframework:spring-test" }
+spring-restdocs-asciidoctor = { module = "org.springframework.restdocs:spring-restdocs-asciidoctor" }
+spring-restdocs-mockmvc = { module = "org.springframework.restdocs:spring-restdocs-mockmvc" }
 
 
 [bundles]
@@ -105,6 +105,7 @@ bintray = { id = "com.jfrog.bintray", version.ref = "bintray" }
 
 cyclondx = { id = "org.cyclonedx.bom", version.ref = "cyclondx" }
 
+git-properties = { id = "com.gorylenko.gradle-git-properties", version = "2.3.2" }
 grgit = { id = "org.ajoberstar.grgit", version.ref = "grgit" }
 
 jib = { id = "com.google.cloud.tools.jib", version.ref = "jib" }
@@ -114,4 +115,3 @@ reckon = { id = "org.ajoberstar.reckon", version.ref = "reckon" }
 test-sets = { id = "org.unbroken-dome.test-sets", version.ref = "testSets" }
 
 spring-boot = { id = "org.springframework.boot", version.ref = "springBoot" }
-

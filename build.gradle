@@ -23,6 +23,7 @@ plugins {
     alias(libs.plugins.bintray)
     alias(libs.plugins.spring.boot)
     alias(libs.plugins.jib)
+    alias(libs.plugins.git.properties)
     alias(libs.plugins.grgit)
     alias(libs.plugins.reckon) apply false
     alias(libs.plugins.cyclondx)
@@ -232,6 +233,9 @@ bootJar {
     archiveFileName = "${archiveBaseName.get()}.${archiveExtension.get()}"
 }
 
+springBoot {
+    buildInfo()
+}
 
 apply from: "${rootDir}/gradle/publishing.gradle"
 

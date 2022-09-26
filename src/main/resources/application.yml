@@ -1,17 +1,26 @@
 spring:
-    data:
-        rest:
-            base-path: /api
-    hateoas:
-        use-hal-as-default-json-media-type: true
+  data:
+    rest:
+      base-path: /api
+  hateoas:
+    use-hal-as-default-json-media-type: true
 
 management:
-    endpoints:
-        enabled-by-default: true
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+    enabled-by-default: true
+  info:
+    git:
+      enabled: true
+      mode: full
+    build:
+      enabled: true
 
 banner:
   location: banner.txt
 
 server:
-    forward-headers-strategy: framework
+  forward-headers-strategy: framework
 
