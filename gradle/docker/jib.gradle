@@ -14,7 +14,7 @@ jib {
         creationTime = 'USE_CURRENT_TIMESTAMP'
     }
     from {
-        image = System.getenv('JIB_FROM_IMAGE') ?: 'adoptopenjdk/openjdk11:alpine-jre'
+        image = System.getenv('JIB_FROM_IMAGE') ?: 'eclipse-temurin:17-jre-alpine'
     }
     to {
         image = "${containerImageNamePrefix}:${containerImageVersion ?: "latest"}"
