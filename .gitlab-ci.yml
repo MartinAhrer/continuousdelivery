@@ -44,7 +44,7 @@ deliver:
 
 deploy:
     extends: .default-job
-    image: ${CI_REGISTRY}/codebreeze-io/devops/nomad-cli:1.3.5
+    image: ${CI_REGISTRY}/codebreeze-io/devops/nomad-cli:1.3.5-debian-slim
     needs:
         - job: deliver
           artifacts: false # deliver pushed artifacts to registry and will be pulled by nomad
