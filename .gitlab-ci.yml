@@ -5,9 +5,6 @@ variables:
     description: "Common Gradle options"
   DEFAULT_JOB_IMAGE_NAME:
     value: eclipse-temurin:17-jdk-alpine
-  DEFAULT_NOMAD_ADDR:
-    value: http://192.168.1.18:4646
-    description: "The nomad cluster IP"
 
 include:
     # Include some default job templates for various job types
@@ -54,7 +51,7 @@ deploy:
     script:
         - |
           cd src/main/nomad
-          export NOMAD_ADDR=${DEFAULT_NOMAD_ADDR}
+          # NOMAD_ADDR must be provided as gitlab-runner environment variable
           nomad namespace apply ${NOMAD_NAMESPACE}
           nomad job run \
             --namespace "${NOMAD_NAMESPACE}" \
