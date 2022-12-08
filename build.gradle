@@ -13,13 +13,14 @@ plugins {
     id 'java-test-fixtures'
     id 'groovy'
     id 'idea'
-    id 'maven-publish'
     id 'version-catalog'
+    id 'maven-publish'
+    id 'org.hibernate.orm' version '6.1.5.Final'
+
     //id 'net.ltgt.apt' version '0.19'
     //id 'net.ltgt.apt-idea' version '0.19'
     alias(libs.plugins.benmanes.versions)
     alias(libs.plugins.asciidoctor.convert)
-    alias(libs.plugins.test.sets)
     alias(libs.plugins.bintray)
     alias(libs.plugins.spring.boot)
     alias(libs.plugins.jib)
@@ -27,6 +28,7 @@ plugins {
     alias(libs.plugins.grgit)
     alias(libs.plugins.reckon) apply false
     alias(libs.plugins.cyclondx)
+    alias(libs.plugins.graalvm.buildtools.native)
 }
 
 apply from: "${rootDir}/gradle/version.gradle"
@@ -35,51 +37,34 @@ apply from: "${rootDir}/gradle/docker/spring-boot-gitlab.gradle"
 apply from: "${rootDir}/gradle/docker/jib.gradle"
 apply from: "${rootDir}/gradle/outdated-dependency.gradle"
 
+
+group = 'at.martinahrer'
+
 repositories {
     mavenCentral()
 }
 
-group = 'at.martinahrer'
-
-sourceCompatibility = JavaVersion.VERSION_17
-targetCompatibility = JavaVersion.VERSION_17
-
 ext {
+    javaVersion = 17
     snippetsDir = file('build/generated-snippets')
 }
 
-
-testSets {
-    localIntegrationTest
-    integrationTest
-    docsTest {
-        dirName = 'docs'
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(javaVersion)
     }
 }
 
-docsTest {
-    outputs.dir snippetsDir
+hibernate {
+    enhancement {
+        lazyInitialization true
+        dirtyTracking true
+        associationManagement true
+    }
 }
 
 configurations {
     asciidoctorExt
-}
-
-asciidoctor {
-    attributes 'snippets': snippetsDir
-
-    // https://docs.spring.io/spring-restdocs/docs/current/reference/html5/#getting-started-build-configuration
-    configurations 'asciidoctorExt'
-    inputs.dir snippetsDir
-    dependsOn docsTest
-}
-
-sourceSets {
-    testFixtures {
-        groovy {
-            srcDir 'src/sharedTest/groovy'
-        }
-    }
 }
 
 dependencies {
@@ -108,58 +93,105 @@ dependencies {
     runtimeOnly(libs.spring.data.rest.hal.explorer)
     runtimeOnly(libs.logstash.logback.encoder)
 
+    testFixturesImplementation(platform(libs.groovy.bom))
     testFixturesImplementation(libs.groovy)
     testFixturesImplementation(libs.groovy.json)
 
     asciidoctorExt(platform(SpringBootPlugin.BOM_COORDINATES))
     asciidoctorExt(libs.spring.restdocs.asciidoctor)
-
-    docsTestImplementation(libs.groovy)
-    docsTestImplementation(libs.groovy.json)
-    docsTestCompileOnly(libs.asm)
-    docsTestImplementation(libs.junit.jupiter.api)
-    docsTestImplementation(libs.junit.vintage.engine)
-    docsTestImplementation(libs.spring.restdocs.mockmvc)
-    docsTestImplementation(libs.json.path)
-    docsTestImplementation(libs.hamcrest.library)
-    docsTestImplementation(libs.spring.boot.starter.test)
-    docsTestRuntimeOnly(libs.h2database)
-    docsTestImplementation(testFixtures(project(":")))
-
-    integrationTestImplementation(libs.groovy)
-    integrationTestImplementation(libs.groovy.json)
-    integrationTestImplementation(libs.spock.spring)
-    integrationTestImplementation(libs.spring.boot.starter.test)
-    integrationTestImplementation(libs.spring.test)
-    integrationTestRuntimeOnly(libs.h2database)
-    integrationTestImplementation(testFixtures(project(":")))
-    addSpockDependencies(it, 'integrationTest')
-
-    localIntegrationTestImplementation(libs.spock.spring)
-    localIntegrationTestImplementation(libs.groovy)
-    localIntegrationTestImplementation(libs.groovy.json)
-    localIntegrationTestImplementation(libs.spring.boot.starter)
-    localIntegrationTestImplementation(libs.spring.boot.starter.test)
-    localIntegrationTestRuntimeOnly(libs.h2database)
-    localIntegrationTestImplementation(testFixtures(project(":")))
-    addSpockDependencies(it, 'localIntegrationTest')
 }
 
-configurations
-        .findAll { (it.name == 'testImplementation' || it.name == 'testFixturesImplementation' || it.name.endsWith('TestImplementation')) }
-        .each {
-            project.dependencies.add(it.name, project.dependencies.platform(libs.spock.bom))
+testing {
+    suites {
+        configureEach { suite->
+            if (suite.name.endsWith("Test")) {
+                println suite.name
+                useJUnitJupiter()
+                dependencies {
+                    implementation(project.dependencies.platform(libs.groovy.bom))
+                    implementation(project.dependencies.platform(libs.spock.bom))
+                    implementation(project.dependencies.platform(SpringBootPlugin.BOM_COORDINATES))
+                    implementation(libs.groovy)
+                    implementation(libs.groovy.json)
+                    implementation(libs.spock.spring)
+                    implementation(project.dependencies.testFixtures(project(":")))
+                }
+                targets {
+                    all {
+                        testTask.configure {
+                            shouldRunAfter(test)
+                        }
+                    }
+                }
+            }
         }
 
-def addSpockDependencies(DependencyHandler dependencies, String testType) {
-    dependencies.add("${testType}Implementation", libs.groovy)
-    dependencies.add("${testType}Implementation", libs.spock)
-    dependencies.add("${testType}RuntimeOnly", libs.bundles.spockClassMocking)
+        test {
+            useJUnitJupiter()
+            dependencies {
+                implementation(project.dependencies.platform(libs.groovy.bom))
+            }
+        }
+
+        integrationTest(JvmTestSuite) {
+            dependencies {
+                implementation(libs.bundles.spock)
+                implementation(libs.spring.boot.starter.test)
+                implementation(libs.spring.web)
+                implementation(libs.spring.test)
+                runtimeOnly(libs.h2database)
+
+            }
+        }
+        localIntegrationTest(JvmTestSuite) {
+            dependencies {
+                implementation(libs.bundles.spock)
+                implementation(libs.spring.boot.starter)
+                implementation(libs.spring.boot.starter.test) {
+                    exclude group: 'org.junit.vintage', module: 'junit-vintage-engine'
+                }
+                implementation(libs.spring.boot.starter.web)
+
+                runtimeOnly(libs.h2database)
+            }
+
+        }
+        docsTest(JvmTestSuite) {
+            useJUnitJupiter()
+            dependencies {
+                implementation(libs.spring.boot.starter.data.jpa) // TODO why
+                implementation(libs.spring.boot.starter.hateoas)
+                implementation(libs.spring.boot.starter.json)
+                implementation(libs.spring.boot.starter.test)
+                implementation(libs.junit.jupiter.api)
+                implementation(libs.spring.restdocs.mockmvc)
+                implementation(libs.json.path)
+                implementation(libs.hamcrest.library)
+
+                runtimeOnly(libs.h2database)
+
+                compileOnly(libs.asm)
+            }
+        }
+    }
+}
+
+asciidoctor {
+    attributes 'snippets': snippetsDir
+
+    // https://docs.spring.io/spring-restdocs/docs/current/reference/html5/#getting-started-build-configuration
+    configurations 'asciidoctorExt'
+    inputs.dir snippetsDir
+    dependsOn docsTest
+}
+
+docsTest {
+    outputs.dir snippetsDir
 }
 
 configurations.all {
     exclude group: 'com.vaadin.external.google', module: 'android-json' // conflicts with jackson
-    //exclude group: 'junit' // use junit 5, not 4 --> Spring rest docs is still requiring junit4
+    exclude group: 'junit' // use junit 5, not 4 --> Spring rest docs is still requiring junit4
 }
 
 test {
@@ -167,7 +199,7 @@ test {
 }
 
 tasks.withType(Test) {
-    useJUnitPlatform()
+    //useJUnitPlatform()
     testLogging {
         events 'passed', 'skipped', 'failed'
     }

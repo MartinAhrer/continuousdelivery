@@ -1,9 +1,12 @@
-package test
+package at.martinahrer.cd.test
 
 import groovy.json.JsonBuilder
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.test.web.client.TestRestTemplate
+import org.springframework.context.annotation.Bean
+import org.springframework.context.annotation.Configuration
+import org.springframework.context.support.PropertySourcesPlaceholderConfigurer
 import org.springframework.http.HttpEntity
 import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpStatus
@@ -16,7 +19,7 @@ import spock.lang.Specification
  * Test that requires a Servlet Container running at <code>http://${test.server.host}:${test.server.port}</code>.
  */
 
-@ContextConfiguration(classes = IntegrationTestApplication)
+@ContextConfiguration(classes = TestConfiguration)
 @Narrative("As a customer relations manager I want to add a company")
 class CompanyApiTest extends Specification {
 
@@ -46,5 +49,18 @@ class CompanyApiTest extends Specification {
         then:
         response.statusCode == HttpStatus.CREATED
     }
+    @Configuration
+    static class TestConfiguration {
+        @Bean
+        TestRestTemplate  testRestTemplate () {
+            return new TestRestTemplate();
+        }
+
+        @Bean
+        PropertySourcesPlaceholderConfigurer placeholderConfigurer() {
+            return  new PropertySourcesPlaceholderConfigurer();
+        }
+    }
+
 }
 

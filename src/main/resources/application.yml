@@ -23,4 +23,7 @@ banner:
 
 server:
   forward-headers-strategy: framework
-
+logging:
+  level:
+    root: info
+    org.springframework.boot: debug
