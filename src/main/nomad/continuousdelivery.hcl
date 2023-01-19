@@ -14,6 +14,16 @@ variable "environment" {
     type = string
 }
 
+variable "api_http_port" {
+    type = number
+    default = 8080
+}
+
+variable "api_management_http_port" {
+    type = number
+    default = 8081
+}
+
 job "continuousdelivery" {
     datacenters = ["dc1"]
     type = "service"
@@ -69,10 +79,10 @@ job "continuousdelivery" {
         }
         network {
             port "http" {
-                to = "8080"
+                to = "${var.api_http_port}"
             }
             port "management_http" {
-                to = "8081"
+                to = "${var.api_management_http_port}"
             }
         }
 
@@ -97,14 +107,15 @@ job "continuousdelivery" {
                 memory = 1024
             }
             env {
-                SERVER_PORT             = "8080"
-                MANAGEMENT_SERVER_PORT  = "8081"
                 SPRING_JPA_GENERATE_DDL = true
             }
             template {
                 destination="application.env"
                 env = true
                 data = <<EOH
+                SERVER_PORT             = "${NOMAD_PORT_http}"
+                MANAGEMENT_SERVER_PORT  = "${NOMAD_PORT_management_http}"
+                SPRING_PROFILES_ACTIVE  = "production"
                 SPRING_DATASOURCE_URL=jdbc:postgresql://{{ range service "continuousdelivery-db-${var.environment}" }}{{ .Address }}:{{ .Port }}{{ end }}/app
                 SPRING_DATASOURCE_USERNAME="spring"
                 SPRING_DATASOURCE_PASSWORD="boot"
