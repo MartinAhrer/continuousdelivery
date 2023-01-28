@@ -36,7 +36,7 @@ jib = "3.2.1"
 
 reckon = "0.16.1"
 
-springBoot = "3.0.0"
+springBoot = "3.0.2"
 
 [libraries]
 
