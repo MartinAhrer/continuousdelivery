@@ -25,7 +25,7 @@ docker container run --rm -ti -v ${PWD}:/levant --workdir /levant -e NOMAD_ADDR=
 
 [source,bash]
 ----
-export NOMAD_NAMESPACE="feature-actuator"
+export NOMAD_NAMESPACE="${$(git rev-parse --abbrev-ref HEAD)//\//-}"
 nomad namespace apply "${NOMAD_NAMESPACE}"
-nomad job run --var environment="${NOMAD_NAMESPACE}" --namespace="${NOMAD_NAMESPACE}" --var-file continuousdelivery-configuration.hcl --var-file credentials.hcl continuousdelivery.hcl
+nomad job run --var environment="${NOMAD_NAMESPACE}" --namespace="${NOMAD_NAMESPACE}" --var-file configuration.hcl --var-file credentials.hcl continuousdelivery.hcl
 ----
