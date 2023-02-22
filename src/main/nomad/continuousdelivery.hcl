@@ -19,11 +19,6 @@ variable "api_http_port" {
     default = 8080
 }
 
-variable "api_management_http_port" {
-    type = number
-    default = 8081
-}
-
 job "continuousdelivery" {
     datacenters = ["dc1"]
     type = "service"
@@ -81,9 +76,6 @@ job "continuousdelivery" {
             port "http" {
                 to = "${var.api_http_port}"
             }
-            port "management_http" {
-                to = "${var.api_management_http_port}"
-            }
         }
 
         task "api" {
@@ -95,8 +87,7 @@ job "continuousdelivery" {
                     password = "${var.registry_auth_password}"
                 }
                 ports = [
-                    "http",
-                    "management_http"
+                    "http"
                 ]
                 dns_servers = [
                     "1.1.1.1",
@@ -114,7 +105,7 @@ job "continuousdelivery" {
                 env = true
                 data = <<EOH
                 SERVER_PORT             = "${NOMAD_PORT_http}"
-                MANAGEMENT_SERVER_PORT  = "${NOMAD_PORT_management_http}"
+                MANAGEMENT_SERVER_PORT  = "${NOMAD_PORT_http}"
                 SPRING_PROFILES_ACTIVE  = "production"
                 SPRING_DATASOURCE_URL=jdbc:postgresql://{{ range service "continuousdelivery-db-${var.environment}" }}{{ .Address }}:{{ .Port }}{{ end }}/app
                 SPRING_DATASOURCE_USERNAME="spring"
@@ -129,7 +120,7 @@ job "continuousdelivery" {
                 check {
                     name     = "continuousdelivery-api-check"
                     type     = "http"
-                    port     = "management_http"
+                    port     = "http"
                     path     = "/actuator/health"
                     interval = "60s"
                     timeout  = "10s"
