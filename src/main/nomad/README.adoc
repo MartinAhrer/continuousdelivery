@@ -21,11 +21,23 @@ TODO
 docker container run --rm -ti -v ${PWD}:/levant --workdir /levant -e NOMAD_ADDR=http://localhost:4646 hashicorp/levant:0.3.1 levant deploy traefik.hcl
 ----
 
-== Deploy application
+== Deploy container application
 
+Default configuration is for application deployment as container.
+
+.Deployment commands
 [source,bash]
 ----
 export NOMAD_NAMESPACE="${$(git rev-parse --abbrev-ref HEAD)//\//-}"
 nomad namespace apply "${NOMAD_NAMESPACE}"
-nomad job run --var environment="${NOMAD_NAMESPACE}" --namespace="${NOMAD_NAMESPACE}" --var-file configuration.hcl --var-file credentials.hcl continuousdelivery.hcl
+nomad job run --var environment="${NOMAD_NAMESPACE}" --namespace="${NOMAD_NAMESPACE}" --var-file configuration.hcl --var-file registry.hcl continuousdelivery.hcl
 ----
+
+For container registry access the following variables are required to be set.
+The above command expects them in a file `registry.hcl` (See https://developer.hashicorp.com/nomad/docs/job-specification/hcl2/variables[variables]).
+
+* `api_image_repository`
+* `registry_auth_username`
+* `registry_auth_password`
+
+
