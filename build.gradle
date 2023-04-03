@@ -15,8 +15,7 @@ plugins {
     id 'idea'
     id 'version-catalog'
     id 'maven-publish'
-    id 'org.hibernate.orm' version '6.1.6.Final'
-
+    alias (libs.plugins.hibernate)
     //id 'net.ltgt.apt' version '0.19'
     //id 'net.ltgt.apt-idea' version '0.19'
     alias(libs.plugins.benmanes.versions)
@@ -104,8 +103,9 @@ dependencies {
 testing {
     suites {
         configureEach { suite->
-            if (suite.name.endsWith("Test")) {
+            if (suite.name.endsWith("Test") || suite.name.equals ("test")) {
                 useJUnitJupiter()
+                useSpock(libs.versions.spock.get())
                 dependencies {
                     implementation(project.dependencies.platform(libs.groovy.bom))
                     implementation(project.dependencies.platform(libs.spock.bom))
@@ -125,16 +125,8 @@ testing {
             }
         }
 
-        test {
-            useJUnitJupiter()
-            dependencies {
-                implementation(project.dependencies.platform(libs.groovy.bom))
-            }
-        }
-
         integrationTest(JvmTestSuite) {
             dependencies {
-                implementation(libs.bundles.spock)
                 implementation(libs.spring.boot.starter.test)
                 implementation(libs.spring.web)
                 implementation(libs.spring.test)
@@ -144,7 +136,6 @@ testing {
         }
         localIntegrationTest(JvmTestSuite) {
             dependencies {
-                implementation(libs.bundles.spock)
                 implementation(libs.spring.boot.starter)
                 implementation(libs.spring.boot.starter.test) {
                     exclude group: 'org.junit.vintage', module: 'junit-vintage-engine'
@@ -156,7 +147,6 @@ testing {
 
         }
         docsTest(JvmTestSuite) {
-            useJUnitJupiter()
             dependencies {
                 implementation(libs.spring.boot.starter.data.jpa) // TODO why
                 implementation(libs.spring.boot.starter.hateoas)
