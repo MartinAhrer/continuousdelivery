@@ -32,12 +32,27 @@ check:
 
 
 deliver:
-    #docker sevice only required for Spring boot buildpack
+    #docker service only required for Spring boot buildpack
     #services:
     #    - docker:19-dind
     variables:
       JIB_FROM_IMAGE: eclipse-temurin:17-jre-alpine
-      DELIVER_JOB_GRADLE_TASK_ARGS: jib
+      DELIVER_JOB_GRADLE_TASK_ARGS: publishBootJavaPublicationToGitLabRepository jib
+
+# Run as extra job as it consumes a large amount of build time
+deliver-native-image:
+  extends: deliver
+  image: "ghcr.io/graalvm/graalvm-ce:ol9-java17-22.3.1"
+  tags:
+    - "local-runner"
+    - "linux-amd64"
+  needs:
+    - job: check
+      artifacts: true
+  variables:
+    DELIVER_JOB_GRADLE_TASK_ARGS: publishBootNativePublicationToGitLabRepository
+  rules:
+    - when: manual
 
 deploy:
     extends: .default-job

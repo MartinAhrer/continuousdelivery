@@ -5,7 +5,25 @@ publishing {
         bootJava(MavenPublication) {
             artifact bootJar
         }
+        project.plugins.withId('org.graalvm.buildtools.native') {
+            org.gradle.internal.os.OperatingSystem os = org.gradle.internal.os.OperatingSystem.current()
+            def nativeCompileTask = tasks.named('nativeCompile').get()
+            def nativeArtifact = artifacts.add('archives',
+                    nativeCompileTask.outputDirectory.file(nativeCompileTask.executableName.get()).get().asFile) {
+                builtBy tasks.named('nativeCompile')
+                type 'native'
+                classifier "${os.name.replace('Mac OS X', 'darwin')}_${System.getProperty('os.arch').replace('x86_64', 'amd64')}"
+            }
+
+            bootNative(MavenPublication) {
+                artifact nativeArtifact
+                groupId = project.group
+                artifactId = project.name
+                version = project.version
+            }
+        }
     }
+
     repositories {
         maven {
             url "https://gitlab.com/api/v4/projects/${System.getenv('CI_PROJECT_ID')}/packages/maven"

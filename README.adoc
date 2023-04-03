@@ -1,8 +1,9 @@
+:toclevels: 3
 :toc: left
 
 = Continuous Delivery Demo
 
-INFO: This is work in progress. We will add features for demoing various aspects of CD.
+INFO: This is work in progress. We will add features for demoing various aspects of DevOps.
 
 == TODO
 
@@ -28,10 +29,29 @@ This is configured using the `jib.from.image` property.
 The built image needs a tag indicating that this is an image targeting the `arm64v8` platform.
 This is configured using the `jib.to.image` property.
 
-Build wiht overridden variable `DELIVER_JOB_GRADLE_TASK_ARGS` value
+Build wit overridden variable `DELIVER_JOB_GRADLE_TASK_ARGS` value
 [source,shell]
 ----
 jib -Djib.from.image=arm64v8/openjdk:11-jre-slim -Djib.to.image="$CI_REGISTRY_IMAGE:arm64v8"
+----
+
+=== Native Image
+
+[source, shell]
+----
+sdk use java 22.3.r17-grl #<.>
+gw nativeCompile #<.>
+----
+<.> Select GraalVM SDK (using sdkman)
+<.> Compile to native image
+
+== Run
+
+.Run using docker compose
+[source, shell]
+----
+cd src/main/docker
+docker compose up -d
 ----
 
 == Dependency Management
