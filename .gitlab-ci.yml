@@ -45,7 +45,7 @@ deliver-native-image:
   image: "ghcr.io/graalvm/graalvm-ce:ol9-java17-22.3.1"
   tags:
     - "local-runner"
-    - "linux-amd64"
+    - "$OS-$ARCH"
   needs:
     - job: check
       artifacts: true
@@ -53,6 +53,12 @@ deliver-native-image:
     DELIVER_JOB_GRADLE_TASK_ARGS: publishBootNativePublicationToGitLabRepository
   rules:
     - when: manual
+  parallel:
+    matrix:
+      - OS: darwin
+        ARCH: amd64
+      - OS: linux
+        ARCH: amd64
 
 deploy:
     extends: .default-job

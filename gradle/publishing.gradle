@@ -12,7 +12,8 @@ publishing {
                     nativeCompileTask.outputDirectory.file(nativeCompileTask.executableName.get()).get().asFile) {
                 builtBy tasks.named('nativeCompile')
                 type 'native'
-                classifier "${os.name.replace('Mac OS X', 'darwin')}_${System.getProperty('os.arch').replace('x86_64', 'amd64')}"
+
+                classifier "${os.name.replace('Mac OS X', 'darwin')}_${System.getProperty('os.arch').replace('x86_64', 'amd64')}".toLowerCase()
             }
 
             bootNative(MavenPublication) {
