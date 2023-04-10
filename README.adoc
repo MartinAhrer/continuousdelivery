@@ -29,7 +29,7 @@ This is configured using the `jib.from.image` property.
 The built image needs a tag indicating that this is an image targeting the `arm64v8` platform.
 This is configured using the `jib.to.image` property.
 
-Build wit overridden variable `DELIVER_JOB_GRADLE_TASK_ARGS` value
+Build with overridden variable `DELIVER_JOB_GRADLE_TASK_ARGS` value
 [source,shell]
 ----
 jib -Djib.from.image=arm64v8/openjdk:11-jre-slim -Djib.to.image="$CI_REGISTRY_IMAGE:arm64v8"
@@ -62,7 +62,6 @@ docker compose up -d
 ----
 ./gradlew dependencyUpdates
 ----
-
 
 === Dependency vulnerability checking
 
