@@ -8,6 +8,20 @@ variable "api_artifact_version" {
     default = "latest"
 }
 
+variable "api_artifact_classifier" {
+    type=string
+    default=""
+}
+
+variable "api_artifact_checksum" {
+    type=string
+}
+
+variable "api_artifact_name_suffix" {
+    type=string
+    default=""
+}
+
 variable "api_artifact_repository" {
     type = string
     default = "registry.gitlab.com/martinahrer"
@@ -43,6 +57,14 @@ variable "repository_private_token" {
 variable "api_service_domain" {
     type=string
     default="192.168.1.36.nip.io"
+}
+
+locals {
+    artifact_classifier="${var.api_artifact_classifier != "" ? format("-%s", var.api_artifact_classifier) : ""}"
+    artifact_name_suffix="${var.api_artifact_name_suffix != "" ? format(".%s", var.api_artifact_name_suffix) : ""}"
+    # Build a filename from the Maven style name components (artifact-id, version, classifier) and filename suffix (e.g. "jar")
+    # e.g "continuousdelivery-1.0.0-linux_amd64.jar"
+    artifact_filename="${var.api_artifact_name}-${var.api_artifact_version}${local.artifact_classifier}${local.artifact_name_suffix}"
 }
 
 variable "api_count" {
@@ -112,18 +134,17 @@ job "continuousdelivery" {
         task "api" {
             driver = "${var.api_task_driver}"
             config {
-                image = "${var.api_artifact_repository}/${var.api_artifact_name}:${var.api_artifact_version}"
-                auth {
-                    username = "${var.registry_auth_username}"
-                    password = "${var.registry_auth_password}"
+                command = "${local.artifact_filename}"
+            }
+            artifact {
+                source = "${var.api_artifact_repository}/${var.api_artifact_name}/${var.api_artifact_version}/${local.artifact_filename}"
+                headers {
+                    PRIVATE-TOKEN = "${var.repository_private_token}"
                 }
-                ports = [
-                    "http"
-                ]
-                dns_servers = [
-                    "1.1.1.1",
-                    "1.0.0.1"
-                ]
+                options {
+                    filename = "${local.artifact_filename}"
+                    checksum = "${var.api_artifact_checksum}"
+                }
             }
             resources {
                 memory = 512

@@ -1,4 +1,5 @@
 :toc: left
+:toclevels: 4
 
 = Deployment to Hashicorp Nomad
 
@@ -91,7 +92,7 @@ open "http://${TRAEFIK_api_service_domain}:81"
 
 
 
-== Deploy container application
+== Deploy container workload
 
 Default configuration is for application deployment as container.
 
@@ -150,3 +151,116 @@ Run `./container-app-run.sh`
 open "http://continuousdelivery-api-${NOMAD_NAMESPACE}.${NOMAD_VAR_api_service_domain}:80/api/"
 ----
 
+
+
+== Deploy native application
+
+.exec driver configuration
+[source,hcl]
+----
+driver = "${var.api_task_driver}"
+config {
+    command = "continuousdelivery"
+}
+artifact {
+    source = "https://gitlab.com/api/v4/projects/14961729/packages/maven/at/martinahrer/${var.artifact_name}/${var.artifact_version}/${var.artifact_name}-${var.artifact_version}-${var.artifact_classifier}"
+    headers {
+        PRIVATE-TOKEN = "${var.repository_private_token}"
+    }
+    options {
+        filename = "${var.artifact_name}"
+        checksum = "${var.artifact_checksum}"
+    }
+}
+----
+
+This driver configuration requires a GitLab private token to be present as variable `repository_private_token` (e.g. by adding to `credentials.hcl`).
+
+=== Run with exec driver
+
+.`exec-configuration.hcl`
+[source,bash]
+----
+include::exec-configuration.hcl[]
+----
+
+==== Local
+
+.Set nomad environment
+[source,bash]
+----
+include::local-native-app-env.sh[]
+----
+Run `. ./local-native-app-env.sh`
+
+.Deployment
+[source,bash]
+----
+include::native-app-run.sh[]
+----
+Run `./native-app-run.sh`
+
+.Deployment
+[source,bash]
+----
+export NOMAD_VAR_api_service_domain="$(ipconfig getifaddr en0).nip.io"
+export NOMAD_NAMESPACE="bootiful-native"
+nomad namespace apply "${NOMAD_NAMESPACE}"
+nomad job run --var environment="${NOMAD_NAMESPACE}" --namespace="${NOMAD_NAMESPACE}" --var-file configuration.hcl --var-file credentials.hcl  --var-file exec-configuration.hcl continuousdelivery.hcl
+----
+
+.Open application
+[source,bash]
+----
+open "http://continuousdelivery-api-${NOMAD_NAMESPACE}.${NOMAD_VAR_api_service_domain}:80/api/"
+----
+
+==== Google cloud platform
+
+.Set nomad environment
+[source,bash]
+----
+include::gcp-native-app-env.sh[]
+----
+Run `. ./gcp-native-app-env.sh`
+
+
+.Deployment
+[source,bash]
+----
+include::native-app-run.sh[]
+----
+Run `./native-app-run.sh`
+
+
+.Open application
+[source,bash]
+----
+open "http://continuousdelivery-api-${NOMAD_NAMESPACE}.${NOMAD_VAR_api_service_domain}:80/api/"
+----
+
+=== Run with raw-exec driver
+
+A nomad client agent with the `raw_exec` driver enabled is required
+(see https://developer.hashicorp.com/nomad/docs/drivers/raw_exec#client-requirements).
+
+.`darwin-raw-exec-configuration.hcl`
+[source,bash]
+----
+include::darwin-raw-exec-configuration.hcl[]
+----
+
+.Deployment
+[source,bash]
+----
+export NOMAD_VAR_api_service_domain="$(ipconfig getifaddr en0).nip.io"
+export NOMAD_NAMESPACE="raw-exec-workload"
+nomad namespace apply "${NOMAD_NAMESPACE}"
+nomad job run --var environment="${NOMAD_NAMESPACE}" --namespace="${NOMAD_NAMESPACE}" --var-file configuration.hcl --var-file credentials.hcl  --var-file darwin-raw-exec-configuration.hcl continuousdelivery.hcl
+----
+
+.Open application
+[source,bash]
+----
+open "http://continuousdelivery-api-${NOMAD_NAMESPACE}.${NOMAD_VAR_api_service_domain}:80/api/"
+----
