@@ -1,13 +1,17 @@
-variable "api_image_tag" {
+variable "api_artifact_name" {
+    type=string
+    default="continuousdelivery"
+}
+
+variable "api_artifact_version" {
     type = string
     default = "latest"
 }
 
-variable "api_image_repository" {
+variable "api_artifact_repository" {
     type = string
-    default = "registry.gitlab.com/martinahrer/continuousdelivery"
+    default = "registry.gitlab.com/martinahrer"
 }
-
 
 variable "registry_auth_username" {
     type = string
@@ -88,7 +92,7 @@ job "continuousdelivery" {
         task "api" {
             driver = "docker"
             config {
-                image = "${var.api_image_repository}:${var.api_image_tag}"
+                image = "${var.api_artifact_repository}/${var.api_artifact_name}:${var.api_artifact_version}"
                 auth {
                     username = "${var.registry_auth_username}"
                     password = "${var.registry_auth_password}"

@@ -1,1 +1,1 @@
-api_image_tag="0.4.3"
+api_artifact_version="0.4.3"

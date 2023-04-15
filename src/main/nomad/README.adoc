@@ -13,7 +13,26 @@ However, when running multiple clients you will not be able to deploy traefik to
 
 === Remote development instances (cluster)
 
-TODO
+Setup cluster according to https://github.com/MartinAhrer/learn-nomad-cluster-setup and https://developer.hashicorp.com/nomad/tutorials/cluster-setup.
+
+.Install software
+[source,bash]
+----
+brew install packer
+brew install terraform
+brew install --cask google-cloud-sdk
+----
+
+==== Google cloud
+
+. Setup gcloud
+[source,bash]
+----
+gcloud auth login
+gcloud config set project ***
+gcloud config set compute/region ***
+gcloud config set compute/zone ***
+----
 
 == Deploy traefik
 
@@ -25,19 +44,20 @@ docker container run --rm -ti -v ${PWD}:/levant --workdir /levant -e NOMAD_ADDR=
 
 Default configuration is for application deployment as container.
 
+For container registry access the following variables are required to be set.
+The command below expects these in a file `credentials.hcl`
+(See https://developer.hashicorp.com/nomad/docs/job-specification/hcl2/variables[variables]).
+
+* `registry_auth_username`
+* `registry_auth_password`
+
 .Deployment commands
 [source,bash]
 ----
 export NOMAD_NAMESPACE="${$(git rev-parse --abbrev-ref HEAD)//\//-}"
 nomad namespace apply "${NOMAD_NAMESPACE}"
-nomad job run --var environment="${NOMAD_NAMESPACE}" --namespace="${NOMAD_NAMESPACE}" --var-file configuration.hcl --var-file registry.hcl continuousdelivery.hcl
+nomad job run --var environment="${NOMAD_NAMESPACE}" --namespace="${NOMAD_NAMESPACE}" --var-file configuration.hcl --var-file credentials.hcl continuousdelivery.hcl
 ----
 
-For container registry access the following variables are required to be set.
-The above command expects them in a file `registry.hcl` (See https://developer.hashicorp.com/nomad/docs/job-specification/hcl2/variables[variables]).
-
-* `api_image_repository`
-* `registry_auth_username`
-* `registry_auth_password`
 
 
