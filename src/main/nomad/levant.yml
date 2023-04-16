@@ -1,7 +1,4 @@
 task:
-    api:
-        image:
-            tag: '0.0.1'
     traefik:
         consul:
             socketaddress: ${attr.unique.network.ip-address}:8500

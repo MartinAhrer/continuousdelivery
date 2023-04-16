@@ -87,3 +87,5 @@ curl -vv -X "POST" "http://localhost:8081/api/v1/bom" \
     -F "bom=@build/reports/bom.json"
 ----
 <.> Get API key from dependencytrack's web user interface (e.g. Team Administrators)
+
+include::src/main/nomad/README.adoc[leveloffset=+1]

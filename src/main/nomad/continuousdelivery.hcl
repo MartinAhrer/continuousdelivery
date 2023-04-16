@@ -30,6 +30,11 @@ variable "api_http_port" {
     default = 8080
 }
 
+variable "api_service_domain" {
+    type=string
+    default="192.168.1.36.nip.io"
+}
+
 job "continuousdelivery" {
     datacenters = ["dc1"]
     type = "service"
@@ -127,7 +132,19 @@ job "continuousdelivery" {
                 name        = "continuousdelivery-api-${var.environment}"
                 provider    = "consul"
                 port        = "http"
-                tags        = [ "api" ]
+
+                tags        = [
+                    "traefik.enable=true",
+                    "traefik.tags=service",
+                    "traefik.http.routers.api.entrypoints=http",
+                    "traefik.http.routers.api.rule=Host(`continuousdelivery-api-${var.environment}.${var.api_service_domain}`)",
+                ]
+                canary_tags = [
+                    "traefik.nomad.canary=true",
+                    "traefik.enable=true",
+                    "traefik.http.routers.api.entrypoints=http",
+                    "traefik.http.routers.api.rule=Host(`canary.continuousdelivery-api-${var.environment}.${var.api_service_domain}`)",
+                ]
                 check {
                     name     = "continuousdelivery-api-check"
                     type     = "http"

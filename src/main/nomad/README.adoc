@@ -1,5 +1,6 @@
-= README
+:toc: left
 
+= Deployment to Hashicorp Nomad
 
 == Runtime infrastructure
 
@@ -23,9 +24,15 @@ brew install terraform
 brew install --cask google-cloud-sdk
 ----
 
+.Set the location of the terraform project
+[source,bash]
+----
+TERRAFORM_GCP_PROJECT="${DEVELOPMENT_HOME}/spaces/codebreeze/learn-nomad-cluster-setup/gcp"
+----
+
 ==== Google cloud
 
-. Setup gcloud
+.Setup gcloud
 [source,bash]
 ----
 gcloud auth login
@@ -34,11 +41,47 @@ gcloud config set compute/region ***
 gcloud config set compute/zone ***
 ----
 
+IMPORTANT: Work in progress
+
 == Deploy traefik
 
+=== Local
+
+.Deployment
+[source,bash]
 ----
-docker container run --rm -ti -v ${PWD}:/levant --workdir /levant -e NOMAD_ADDR=http://localhost:4646 hashicorp/levant:0.3.1 levant deploy traefik.hcl
+unset NOMAD_NAMESPACE
+levant render -out=traefik.rendered.hcl traefik.hcl
+nomad job run traefik.rendered.hcl
 ----
+
+.Open traefik console
+[source,bash]
+----
+open "http://$(ipconfig getifaddr en0).nip.io:81"
+----
+
+=== Google cloud platform
+
+.Set nomad environment
+[source,bash]
+----
+pushd ${TERRAFORM_GCP_PROJECT}
+export NOMAD_VAR_consul_http_token="$(terraform output -raw consul_bootstrap_token_secret)"
+popd
+----
+
+.Deployment
+[source,bash]
+----
+export NOMAD_VAR_consul_http_token
+unset NOMAD_NAMESPACE
+levant render -out=traefik.rendered.hcl traefik.hcl
+nomad job run traefik.rendered.hcl
+----
+
+IMPORTANT: Work in progress
+
 
 == Deploy container application
 
@@ -51,7 +94,9 @@ The command below expects these in a file `credentials.hcl`
 * `registry_auth_username`
 * `registry_auth_password`
 
-.Deployment commands
+=== Local
+
+.Deployment
 [source,bash]
 ----
 export NOMAD_NAMESPACE="${$(git rev-parse --abbrev-ref HEAD)//\//-}"
@@ -59,5 +104,36 @@ nomad namespace apply "${NOMAD_NAMESPACE}"
 nomad job run --var environment="${NOMAD_NAMESPACE}" --namespace="${NOMAD_NAMESPACE}" --var-file configuration.hcl --var-file credentials.hcl continuousdelivery.hcl
 ----
 
+.Open application
+[source,bash]
+----
+export NOMAD_NAMESPACE="${$(git rev-parse --abbrev-ref HEAD)//\//-}"
+open http://continuousdelivery-api-${NOMAD_NAMESPACE}.$(ipconfig getifaddr en0).nip.io:80/api/
+----
 
+=== Google cloud platform
+
+.Set nomad environment
+[source,bash]
+----
+pushd ${TERRAFORM_GCP_PROJECT}
+export NOMAD_VAR_api_service_domain="$(terraform output -json instance_client_ip_addresses | jq -r '.[0]').nip.io"
+popd
+----
+
+.Deployment
+[source,bash]
+----
+export NOMAD_VAR_api_service_domain
+export NOMAD_NAMESPACE="${$(git rev-parse --abbrev-ref HEAD)//\//-}"
+nomad namespace apply "${NOMAD_NAMESPACE}"
+nomad job run --var environment="${NOMAD_NAMESPACE}" --namespace="${NOMAD_NAMESPACE}" --var-file configuration.hcl --var-file credentials.hcl continuousdelivery.hcl
+----
+
+.Open application
+[source,bash]
+----
+export NOMAD_NAMESPACE="${$(git rev-parse --abbrev-ref HEAD)//\//-}"
+open "http://continuousdelivery-api-${NOMAD_NAMESPACE}.${NOMAD_VAR_api_service_domain}:80/api/"
+----
 

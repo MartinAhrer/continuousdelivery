@@ -3,6 +3,7 @@ providers:
         exposedByDefault: false # services need a traefik.enable=true tag
         endpoint:
             address: {{ env "CONSUL_SOCKET_ADDRESS" }}
+            token: {{ env "CONSUL_HTTP_TOKEN" }}
         prefix: traefik # the default
         constraints: "Tag(`traefik.tags=service`)"
 
@@ -15,9 +16,9 @@ ping:
 
 entryPoints:
     http:
-        address: ":8080"
+        address: {{ env "NOMAD_PORT_http" | printf ":%s" }}
     traefik:
-        address: ":8081"
+        address: {{ env "NOMAD_PORT_api" | printf ":%s" }}
 
 log:
     level: DEBUG

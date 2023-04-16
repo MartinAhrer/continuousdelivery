@@ -1,3 +1,8 @@
+variable "consul_http_token" {
+    type=string
+    default=""
+}
+
 job "traefik" {
     region      = "global"
     datacenters = ["dc1"]
@@ -7,17 +12,17 @@ job "traefik" {
     group "traefik" {
         network {
             port "http" {
-                static = 8080
+                static = 80
             }
             port "api" {
-                static = 8081
+                static = 81
             }
         }
 
         task "traefik" {
             driver = "docker"
             config {
-                image        = "traefik:2.7"
+                image        = "traefik:2.9"
                 volumes = [
                     "local/traefik.yml:/etc/traefik/traefik.yml",
                 ]
@@ -27,10 +32,9 @@ job "traefik" {
             }
             env {
                 CONSUL_SOCKET_ADDRESS = "[[ .task.traefik.consul.socketaddress ]]"
+                CONSUL_HTTP_TOKEN = "${var.consul_http_token}"
             }
             template {
-                # traefik configuration is loaded from external file
-                # https://learn.hashicorp.com/tutorials/nomad/dry-jobs-levant?in=nomad/templates
                  data = <<EOF
 [[ fileContents "traefik.yml" ]]
                 EOF
