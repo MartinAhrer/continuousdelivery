@@ -106,7 +106,7 @@ job "continuousdelivery" {
                 ]
             }
             resources {
-                memory = 1024
+                memory = 512
             }
             env {
                 SPRING_JPA_GENERATE_DDL = true
