@@ -101,6 +101,7 @@ The command below expects these in a file `credentials.hcl`
 .Deployment
 [source,bash]
 ----
+export NOMAD_VAR_api_service_domain="$(ipconfig getifaddr en0).nip.io"
 export NOMAD_NAMESPACE="${$(git rev-parse --abbrev-ref HEAD)//\//-}"
 nomad namespace apply "${NOMAD_NAMESPACE}"
 nomad job run --var environment="${NOMAD_NAMESPACE}" --namespace="${NOMAD_NAMESPACE}" --var-file configuration.hcl --var-file credentials.hcl continuousdelivery.hcl
@@ -110,7 +111,7 @@ nomad job run --var environment="${NOMAD_NAMESPACE}" --namespace="${NOMAD_NAMESP
 [source,bash]
 ----
 export NOMAD_NAMESPACE="${$(git rev-parse --abbrev-ref HEAD)//\//-}"
-open http://continuousdelivery-api-${NOMAD_NAMESPACE}.$(ipconfig getifaddr en0).nip.io:80/api/
+open "http://continuousdelivery-api-${NOMAD_NAMESPACE}.$(ipconfig getifaddr en0).nip.io:80/api/"
 ----
 
 === Google cloud platform

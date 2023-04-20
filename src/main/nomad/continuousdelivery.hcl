@@ -35,6 +35,11 @@ variable "api_service_domain" {
     default="192.168.1.36.nip.io"
 }
 
+variable "api_count" {
+    type=number
+    default=3
+}
+
 job "continuousdelivery" {
     datacenters = ["dc1"]
     type = "service"
@@ -77,7 +82,7 @@ job "continuousdelivery" {
     }
 
     group "api" {
-        count = 3
+        count = "${var.api_count}"
         spread {
             attribute = "${node.datacenter}"
         }
@@ -136,14 +141,14 @@ job "continuousdelivery" {
                 tags        = [
                     "traefik.enable=true",
                     "traefik.tags=service",
-                    "traefik.http.routers.api.entrypoints=http",
-                    "traefik.http.routers.api.rule=Host(`continuousdelivery-api-${var.environment}.${var.api_service_domain}`)",
+                    "traefik.http.routers.continuousdelivery-api-${var.environment}.entrypoints=http",
+                    "traefik.http.routers.continuousdelivery-api-${var.environment}.rule=Host(`continuousdelivery-api-${var.environment}.${var.api_service_domain}`)",
                 ]
                 canary_tags = [
                     "traefik.nomad.canary=true",
                     "traefik.enable=true",
-                    "traefik.http.routers.api.entrypoints=http",
-                    "traefik.http.routers.api.rule=Host(`canary.continuousdelivery-api-${var.environment}.${var.api_service_domain}`)",
+                    "traefik.http.routers.continuousdelivery-api-${var.environment}.entrypoints=http",
+                    "traefik.http.routers.continuousdelivery-api-${var.environment}.rule=Host(`canary.continuousdelivery-api-${var.environment}.${var.api_service_domain}`)",
                 ]
                 check {
                     name     = "continuousdelivery-api-check"
