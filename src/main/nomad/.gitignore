@@ -1,1 +1,2 @@
 credentials.hcl
+*.rendered.hcl

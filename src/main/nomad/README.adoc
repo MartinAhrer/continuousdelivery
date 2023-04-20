@@ -67,6 +67,8 @@ open "http://$(ipconfig getifaddr en0).nip.io:81"
 [source,bash]
 ----
 pushd ${TERRAFORM_GCP_PROJECT}
+export NOMAD_ADDR=$(terraform output -raw lb_address_consul_nomad):4646
+export NOMAD_TOKEN=$(cat nomad_bootstrap.token)
 export NOMAD_VAR_consul_http_token="$(terraform output -raw consul_bootstrap_token_secret)"
 popd
 ----
@@ -117,6 +119,8 @@ open http://continuousdelivery-api-${NOMAD_NAMESPACE}.$(ipconfig getifaddr en0).
 [source,bash]
 ----
 pushd ${TERRAFORM_GCP_PROJECT}
+export NOMAD_ADDR=$(terraform output -raw lb_address_consul_nomad):4646
+export NOMAD_TOKEN=$(cat nomad_bootstrap.token)
 export NOMAD_VAR_api_service_domain="$(terraform output -json instance_client_ip_addresses | jq -r '.[0]').nip.io"
 popd
 ----
