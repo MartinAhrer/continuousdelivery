@@ -30,6 +30,16 @@ variable "api_http_port" {
     default = 8080
 }
 
+variable "api_task_driver" {
+    type=string
+    default="docker"
+}
+
+variable "repository_private_token" {
+    type=string
+    default="UNUSED"
+}
+
 variable "api_service_domain" {
     type=string
     default="192.168.1.36.nip.io"
@@ -100,7 +110,7 @@ job "continuousdelivery" {
         }
 
         task "api" {
-            driver = "docker"
+            driver = "${var.api_task_driver}"
             config {
                 image = "${var.api_artifact_repository}/${var.api_artifact_name}:${var.api_artifact_version}"
                 auth {

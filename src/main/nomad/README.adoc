@@ -70,6 +70,7 @@ pushd ${TERRAFORM_GCP_PROJECT}
 export NOMAD_ADDR=$(terraform output -raw lb_address_consul_nomad):4646
 export NOMAD_TOKEN=$(cat nomad_bootstrap.token)
 export NOMAD_VAR_consul_http_token="$(terraform output -raw consul_bootstrap_token_secret)"
+export TRAEFIK_api_service_domain="$(terraform output -json instance_client_ip_addresses | jq -r '.[0]').nip.io"
 popd
 ----
 
@@ -82,7 +83,12 @@ levant render -out=traefik.rendered.hcl traefik.hcl
 nomad job run traefik.rendered.hcl
 ----
 
-IMPORTANT: Work in progress
+.Open traefik console
+[source,bash]
+----
+open "http://${TRAEFIK_api_service_domain}:81"
+----
+
 
 
 == Deploy container application
