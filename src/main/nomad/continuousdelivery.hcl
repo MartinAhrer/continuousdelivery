@@ -134,7 +134,7 @@ job "continuousdelivery" {
         task "api" {
             driver = "${var.api_task_driver}"
             config {
-                command = "${local.artifact_filename}"
+                jar_path = "local/${local.artifact_filename}"
             }
             artifact {
                 source = "${var.api_artifact_repository}/${var.api_artifact_name}/${var.api_artifact_version}/${local.artifact_filename}"

@@ -264,3 +264,63 @@ nomad job run --var environment="${NOMAD_NAMESPACE}" --namespace="${NOMAD_NAMESP
 ----
 open "http://continuousdelivery-api-${NOMAD_NAMESPACE}.${NOMAD_VAR_api_service_domain}:80/api/"
 ----
+
+
+== Deploy Java workload
+
+A nomad client agent with the `java` driver enabled is required (Java 17+)
+
+.Java driver configuration
+[source,hcl]
+----
+driver = "${var.api_task_driver}"
+config {
+    jar_path = "local/${local.artifact_filename}"
+}
+----
+
+.`java-configuration.hcl`
+----
+include::java-configuration.hcl[]
+----
+
+=== Local
+
+.Deployment
+[source,bash]
+----
+export NOMAD_VAR_api_service_domain="$(ipconfig getifaddr en0).nip.io"
+export NOMAD_NAMESPACE="java-workload"
+nomad namespace apply "${NOMAD_NAMESPACE}"
+nomad job run --var environment="${NOMAD_NAMESPACE}" --namespace="${NOMAD_NAMESPACE}" --var-file configuration.hcl --var-file credentials.hcl  --var-file java-configuration.hcl continuousdelivery.hcl
+----
+
+.Open application
+[source,bash]
+----
+open "http://continuousdelivery-api-${NOMAD_NAMESPACE}.${NOMAD_VAR_api_service_domain}:80/api/"
+----
+
+=== Google cloud platform
+
+.Set nomad environment
+[source,bash]
+----
+include::gcp-native-app-env.sh[]
+----
+Run `. ./gcp-java-app-env.sh`
+
+
+.Deployment
+[source,bash]
+----
+include::java-app-run.sh[]
+----
+Run `./java-app-run.sh`
+
+.Open application
+[source,bash]
+----
+open "http://continuousdelivery-api-${NOMAD_NAMESPACE}.${NOMAD_VAR_api_service_domain}:80/api/"
+----
+
