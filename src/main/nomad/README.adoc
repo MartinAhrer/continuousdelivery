@@ -27,7 +27,7 @@ brew install --cask google-cloud-sdk
 .Set the location of the terraform project
 [source,bash]
 ----
-TERRAFORM_GCP_PROJECT="${DEVELOPMENT_HOME}/spaces/codebreeze/learn-nomad-cluster-setup/gcp"
+export TERRAFORM_GCP_PROJECT="${DEVELOPMENT_HOME}/spaces/codebreeze/learn-nomad-cluster-setup/gcp"
 ----
 
 ==== Google cloud
@@ -104,19 +104,26 @@ The command below expects these in a file `credentials.hcl`
 
 === Local
 
+
+.Set nomad environment
+[source,bash]
+----
+include::local-container-app-env.sh[]
+----
+Run `. ./local-container-app-env.sh`
+
+.Deployment
+
 .Deployment
 [source,bash]
 ----
-export NOMAD_VAR_api_service_domain="$(ipconfig getifaddr en0).nip.io"
-export NOMAD_NAMESPACE="${$(git rev-parse --abbrev-ref HEAD)//\//-}"
-nomad namespace apply "${NOMAD_NAMESPACE}"
-nomad job run --var environment="${NOMAD_NAMESPACE}" --namespace="${NOMAD_NAMESPACE}" --var-file configuration.hcl --var-file credentials.hcl continuousdelivery.hcl
+include::container-app-run.sh[]
 ----
+Run `./container-app-run.sh`
 
 .Open application
 [source,bash]
 ----
-export NOMAD_NAMESPACE="${$(git rev-parse --abbrev-ref HEAD)//\//-}"
 open "http://continuousdelivery-api-${NOMAD_NAMESPACE}.$(ipconfig getifaddr en0).nip.io:80/api/"
 ----
 
@@ -125,26 +132,21 @@ open "http://continuousdelivery-api-${NOMAD_NAMESPACE}.$(ipconfig getifaddr en0)
 .Set nomad environment
 [source,bash]
 ----
-pushd ${TERRAFORM_GCP_PROJECT}
-export NOMAD_ADDR=$(terraform output -raw lb_address_consul_nomad):4646
-export NOMAD_TOKEN=$(cat nomad_bootstrap.token)
-export NOMAD_VAR_api_service_domain="$(terraform output -json instance_client_ip_addresses | jq -r '.[0]').nip.io"
-popd
+include::gcp-container-app-env.sh[]
 ----
+Run `. ./gcp-container-app-env.sh`
+
 
 .Deployment
 [source,bash]
 ----
-export NOMAD_VAR_api_service_domain
-export NOMAD_NAMESPACE="${$(git rev-parse --abbrev-ref HEAD)//\//-}"
-nomad namespace apply "${NOMAD_NAMESPACE}"
-nomad job run --var environment="${NOMAD_NAMESPACE}" --namespace="${NOMAD_NAMESPACE}" --var-file configuration.hcl --var-file credentials.hcl continuousdelivery.hcl
+include::container-app-run.sh[]
 ----
+Run `./container-app-run.sh`
 
 .Open application
 [source,bash]
 ----
-export NOMAD_NAMESPACE="${$(git rev-parse --abbrev-ref HEAD)//\//-}"
 open "http://continuousdelivery-api-${NOMAD_NAMESPACE}.${NOMAD_VAR_api_service_domain}:80/api/"
 ----
 
