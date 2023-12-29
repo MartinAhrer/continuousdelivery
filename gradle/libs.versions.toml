@@ -1,11 +1,11 @@
 [versions]
-asm = "9.3"
+asm = "9.6"
 
 bytebuddy = "1.12.+"
 
-cyclondx = "1.4.1"
+cyclondx = "1.8.1"
 
-groovy = "4.0.11"
+groovy = "4.0.17"
 
 h2database = "2.1.214"
 
@@ -14,29 +14,29 @@ jupiter = "5.9.0"
 
 lombok = '1.18.26'
 logback = '1.2.11'
-logstash = '7.2'
+logstash = '7.4'
 
 objenesis = "3.3"
 
-postgresql = "42.4.1"
+postgresql = "42.7.1"
 
 spock = "2.3-groovy-4.0" # keep aligned with groovyMinorVersion
 
 # plugins
 asciidoctorJvmConvert = "3.3.2"
 
-benmanesVersions = "0.42.0"
+benmanesVersions = "0.50.0"
 bintray = "1.8.5"
 
-graalvmBuildtoolsNative = "0.9.20"
+graalvmBuildtoolsNative = "0.9.28"
 
-grgit = "5.0.0"
+grgit = "5.2.1"
 
-jib = "3.2.1"
+jib = "3.4.0"
 
-reckon = "0.16.1"
+reckon = "0.18.1" #see settings.gradle
 
-springBoot = "3.0.5"
+springBoot = "3.2.1"
 
 [libraries]
 
@@ -115,7 +115,7 @@ graalvm-buildtools-native = { id = "org.graalvm.buildtools.native", version.ref 
 git-properties = { id = "com.gorylenko.gradle-git-properties", version = "2.4.1" }
 grgit = { id = "org.ajoberstar.grgit", version.ref = "grgit" }
 
-hibernate = { id = "org.hibernate.orm", version = "6.1.6.Final" }
+hibernate = { id = "org.hibernate.orm", version = "6.4.1.Final" }
 
 jib = { id = "com.google.cloud.tools.jib", version.ref = "jib" }
 

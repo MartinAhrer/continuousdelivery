@@ -25,10 +25,15 @@ plugins {
     alias(libs.plugins.jib)
     alias(libs.plugins.git.properties)
     alias(libs.plugins.grgit)
-    alias(libs.plugins.reckon) apply false
     alias(libs.plugins.cyclondx)
     alias(libs.plugins.graalvm.buildtools.native)
 }
+
+ext {
+    javaVersion = 17
+    snippetsDir = file('build/generated-snippets')
+}
+
 
 apply from: "${rootDir}/gradle/version.gradle"
 apply from: "${rootDir}/gradle/docker/dockerfile.gradle"
@@ -36,16 +41,10 @@ apply from: "${rootDir}/gradle/docker/spring-boot-gitlab.gradle"
 apply from: "${rootDir}/gradle/docker/jib.gradle"
 apply from: "${rootDir}/gradle/outdated-dependency.gradle"
 
-
 group = 'at.martinahrer'
 
 repositories {
     mavenCentral()
-}
-
-ext {
-    javaVersion = 17
-    snippetsDir = file('build/generated-snippets')
 }
 
 java {
@@ -256,6 +255,15 @@ bootJar {
 
 springBoot {
     buildInfo()
+}
+
+
+graalvmNative {
+    binaries {
+        main {
+            buildArgs.add('-O0')
+        }
+    }
 }
 
 apply from: "${rootDir}/gradle/publishing.gradle"

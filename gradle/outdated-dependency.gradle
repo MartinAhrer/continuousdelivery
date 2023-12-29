@@ -3,14 +3,7 @@ buildscript {
     repositories {
         gradlePluginPortal()
     }
-
-    def versionCatalog = extensions.getByType(VersionCatalogsExtension).named("libs")
-    dependencies {
-        classpath "com.github.ben-manes:gradle-versions-plugin:${versionCatalog.findVersion('benmanesVersions').get()}"
-    }
 }
-
-apply plugin: "com.github.ben-manes.versions"
 
 def isNonStableDependency = { def candidate ->
     def stableKeyword = ['RELEASE', 'FINAL', 'GA'].any { it -> candidate.version.toUpperCase().contains(it) }

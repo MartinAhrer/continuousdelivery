@@ -4,5 +4,18 @@ pluginManagement {
         mavenCentral()
     }
 }
+
+plugins {
+    id('org.ajoberstar.reckon.settings') version '0.18.1' apply(false)
+}
 rootProject.name = 'continuousdelivery'
 
+if (providers.gradleProperty("reckon.enabled").get() == 'true') {
+    apply plugin: 'org.ajoberstar.reckon.settings'
+
+    reckon {
+        defaultInferredScope = 'patch'
+        scopeCalc = calcScopeFromProp().or(calcScopeFromCommitMessages())
+        snapshotFromProp()
+    }
+}
