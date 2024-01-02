@@ -10,7 +10,7 @@ plugins {
 }
 rootProject.name = 'continuousdelivery'
 
-if (providers.gradleProperty("reckon.enabled").get() == 'true') {
+if (providers.gradleProperty("reckon.enabled").getOrElse('false') == 'true') {
     apply plugin: 'org.ajoberstar.reckon.settings'
 
     reckon {
