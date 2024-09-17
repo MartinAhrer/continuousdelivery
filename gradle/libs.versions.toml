@@ -5,7 +5,7 @@ bytebuddy = "1.12.+"
 
 cyclondx = "1.8.1"
 
-groovy = "4.0.17"
+groovy = "4.0.22"
 
 h2database = "2.1.214"
 
@@ -26,7 +26,6 @@ spock = "2.3-groovy-4.0" # keep aligned with groovyMinorVersion
 asciidoctorJvmConvert = "3.3.2"
 
 benmanesVersions = "0.50.0"
-bintray = "1.8.5"
 
 graalvmBuildtoolsNative = "0.9.28"
 
@@ -36,7 +35,7 @@ jib = "3.4.0"
 
 reckon = "0.18.1" #see settings.gradle
 
-springBoot = "3.2.1"
+springBoot = "3.3.2"
 
 [libraries]
 
@@ -106,7 +105,6 @@ spock = ["bytebuddy", "objenesis", "spock"]
 asciidoctor-convert = { id = "org.asciidoctor.jvm.convert", version.ref = "asciidoctorJvmConvert" }
 
 benmanes-versions = { id = "com.github.ben-manes.versions", version.ref = "benmanesVersions" }
-bintray = { id = "com.jfrog.bintray", version.ref = "bintray" }
 
 cyclondx = { id = "org.cyclonedx.bom", version.ref = "cyclondx" }
 

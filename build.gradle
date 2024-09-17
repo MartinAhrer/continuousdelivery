@@ -2,8 +2,8 @@ import org.springframework.boot.gradle.plugin.SpringBootPlugin
 
 buildscript {
     repositories {
-        gradlePluginPortal()
         mavenCentral()
+        gradlePluginPortal()
     }
 }
 
@@ -20,7 +20,6 @@ plugins {
     //id 'net.ltgt.apt-idea' version '0.19'
     alias(libs.plugins.benmanes.versions)
     alias(libs.plugins.asciidoctor.convert)
-    alias(libs.plugins.bintray)
     alias(libs.plugins.spring.boot)
     alias(libs.plugins.jib)
     alias(libs.plugins.git.properties)
@@ -229,24 +228,6 @@ tasks.named('build').configure {
 tasks.named('check').configure {
     dependsOn tasks.named('localIntegrationTest')
     dependsOn tasks.named('docsTest')
-}
-
-bintray {
-    user = project.hasProperty('bintrayUser') ? project.property('bintrayUser') : System.getenv('BINTRAY_USER')
-    key = project.hasProperty('bintrayApiKey') ? project.property('bintrayApiKey') : System.getenv('BINTRAY_API_KEY')
-
-    publications = ['bootJava']
-
-    pkg {
-        repo = 'continuousdelivery'
-        name = project.name
-        licenses = ['Apache-2.0']
-        vcsUrl = 'https://github.com/MartinAhrer/continuousdelivery.git'
-
-        version {
-            name = project.version
-        }
-    }
 }
 
 bootJar {
