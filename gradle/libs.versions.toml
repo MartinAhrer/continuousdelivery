@@ -3,7 +3,7 @@ asm = "9.6"
 
 bytebuddy = "1.12.+"
 
-cyclondx = "1.8.1"
+cyclondx = "1.10.0"
 
 groovy = "4.0.22"
 
