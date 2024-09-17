@@ -35,7 +35,7 @@ jib = "3.4.0"
 
 reckon = "0.18.1" #see settings.gradle
 
-springBoot = "3.3.2"
+springBoot = "3.3.3"
 
 [libraries]
 
@@ -113,7 +113,7 @@ graalvm-buildtools-native = { id = "org.graalvm.buildtools.native", version.ref 
 git-properties = { id = "com.gorylenko.gradle-git-properties", version = "2.4.1" }
 grgit = { id = "org.ajoberstar.grgit", version.ref = "grgit" }
 
-hibernate = { id = "org.hibernate.orm", version = "6.4.1.Final" }
+hibernate = { id = "org.hibernate.orm", version = "6.5.2.Final" }
 
 jib = { id = "com.google.cloud.tools.jib", version.ref = "jib" }
 
